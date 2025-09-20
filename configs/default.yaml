@@ -1,0 +1,66 @@
+# Bittle四足歩行ロボット深層強化学習 - デフォルト設定
+
+# 環境設定
+environment:
+  name: "BittleWalking-v0"
+  max_episode_steps: 500
+  control_frequency: 50
+  physics_frequency: 240
+  gravity: -9.81
+  time_step: 0.004  # 1/240
+  
+# ロボット設定  
+robot:
+  urdf_path: "bittle.urdf"
+  initial_position: [0.0, 0.0, 0.1]
+  initial_orientation: [0.0, 0.0, 0.0]
+  joint_limits: [-1.57, 1.57]  # ±90度
+  max_torque: 10.0
+  
+# 報酬設定
+rewards:
+  forward_velocity_weight: 10.0
+  survival_reward: 1.0
+  fall_penalty: -100.0
+  energy_efficiency_weight: -0.01
+  
+# 終了条件
+termination:
+  min_height: 0.05
+  max_roll: 45.0   # 度
+  max_pitch: 45.0  # 度
+
+# 学習設定
+training:
+  algorithm: "PPO"
+  total_timesteps: 1000000
+  n_envs: 4
+  n_steps: 2048
+  learning_rate: 0.0003
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  
+# 保存設定
+save:
+  frequency: 100000
+  model_path: "./models"
+  checkpoint_path: "./models/checkpoints"
+  vec_normalize_path: "./models/vec_normalize.pkl"
+  
+# 評価設定
+evaluation:
+  frequency: 50000
+  n_eval_episodes: 5
+  deterministic: true
+  
+# ログ設定
+logging:
+  log_dir: "./logs"
+  tensorboard: true
+  verbose: 1
+  debug_level: "INFO"
