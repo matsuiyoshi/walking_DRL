@@ -1,0 +1,16 @@
+2025-09-20 19:00:12,453 | bittle_trainer |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-20 19:00:12.453418 ===
+2025-09-20 19:00:12,453 | bittle_trainer |     INFO | logger.py:86 | info() | === Bittle学習システム初期化開始 ===
+2025-09-20 19:00:12,455 | bittle_trainer |     INFO | logger.py:86 | info() | 設定ファイルの読み込み完了 | Data: {"config_path": "configs/experiment.yaml"}
+2025-09-20 19:00:12,455 | bittle_trainer |     INFO | logger.py:86 | info() | Bittle学習システム初期化完了
+2025-09-20 19:00:12,455 | bittle_trainer |     INFO | logger.py:86 | info() | === 学習開始 ===
+2025-09-20 19:00:12,455 | bittle_trainer |     INFO | logger.py:86 | info() | 環境の初期化...
+2025-09-20 19:00:12,455 | bittle_trainer |     INFO | logger.py:86 | info() | シングルプロセス環境を作成
+2025-09-20 19:00:12,830 | bittle_trainer |     INFO | logger.py:86 | info() | 環境作成完了
+2025-09-20 19:00:13,022 | bittle_trainer |     INFO | logger.py:86 | info() | 評価環境作成完了
+2025-09-20 19:00:13,022 | bittle_trainer |     INFO | logger.py:86 | info() | モデルの初期化...
+2025-09-20 19:00:13,597 | bittle_trainer |     INFO | logger.py:86 | info() | PPOモデル作成完了 | Data: {"learning_rate": 0.0003, "batch_size": 32, "tensorboard_log": "./logs/tensorboard"}
+2025-09-20 19:00:13,597 | bittle_trainer |     INFO | logger.py:86 | info() | コールバックの初期化...
+2025-09-20 19:00:13,598 | bittle_trainer |     INFO | logger.py:86 | info() | コールバック作成完了 | Data: {"eval_frequency": 10000, "save_frequency": 10000}
+2025-09-20 19:00:13,598 | bittle_trainer |     INFO | logger.py:86 | info() | 学習パラメータ | Data: {"total_timesteps": 50000, "algorithm": "PPO", "learning_rate": 0.0003, "batch_size": 32}
+2025-09-20 19:00:13,598 | bittle_trainer |     INFO | logger.py:86 | info() | 学習実行開始...
+2025-09-20 19:01:00,926 | bittle_trainer |    ERROR | logger.py:102 | error() | 学習中にエラーが発生しました | Exception: AssertionError: Error while synchronizing normalization stats: expected the eval env to be a VecEnvWrapper but got <stable_baselines3.common.vec_env.dummy_vec_env.DummyVecEnv object at 0x7c9fb09bd6d0> instead. This is probably due to the training env not being wrapped the same way as the evaluation env. Training env type: <stable_baselines3.common.vec_env.vec_normalize.VecNormalize object at 0x7c9fb09e42f0>.

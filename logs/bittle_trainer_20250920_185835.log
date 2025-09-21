@@ -1,0 +1,5 @@
+2025-09-20 18:58:35,258 | bittle_trainer |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-20 18:58:35.258896 ===
+2025-09-20 18:58:35,258 | bittle_trainer |     INFO | logger.py:86 | info() | === Bittle学習システム初期化開始 ===
+2025-09-20 18:58:35,260 | bittle_trainer |    ERROR | logger.py:102 | error() | 設定ファイル読み込みエラー | Exception: ConfigValidationError: Configuration validation failed for key: robot.urdf_path (expected: existing file, got: file not found: bittle.urdf)
+2025-09-20 18:58:35,260 | bittle_trainer |     INFO | logger.py:86 | info() | デフォルト設定にフォールバック
+2025-09-20 18:58:35,260 | bittle_trainer | CRITICAL | logger.py:114 | critical() | 学習システム初期化エラー | Exception: KeyError: 'save'

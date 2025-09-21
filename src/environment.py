@@ -377,8 +377,14 @@ class BittleEnvironment(gym.Env):
         p.setGravity(0, 0, gravity)
         p.setTimeStep(1.0 / self.physics_frequency)
         
-        # 地面の追加
-        p.loadURDF("plane.urdf")
+        # 地面の追加（PyBulletの標準地面を使用）
+        try:
+            p.loadURDF("plane.urdf")
+        except:
+            # 標準のplane.urdfが見つからない場合は、シンプルな地面を作成
+            self.logger.warning("plane.urdfが見つからないため、シンプルな地面を作成します")
+            plane_shape = p.createCollisionShape(p.GEOM_PLANE)
+            p.createMultiBody(0, plane_shape)
         
         self.logger.debug("物理シミュレーションリセット完了")
     
@@ -681,7 +687,7 @@ class BittleEnvironment(gym.Env):
     
     def _cleanup_on_error(self):
         """エラー時のクリーンアップ"""
-        if self.physics_client is not None:
+        if hasattr(self, 'physics_client') and self.physics_client is not None:
             try:
                 p.disconnect(self.physics_client)
             except:

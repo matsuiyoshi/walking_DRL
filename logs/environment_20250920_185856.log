@@ -1,0 +1,3 @@
+2025-09-20 18:58:56,018 | environment |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-20 18:58:56.018432 ===
+2025-09-20 18:58:56,018 | environment |     INFO | logger.py:86 | info() | === Bittle環境の初期化開始 ===
+2025-09-20 18:58:56,018 | environment | CRITICAL | logger.py:114 | critical() | 環境初期化中にエラーが発生しました | Exception: ConfigValidationError: Configuration validation failed for key: robot.urdf_path (expected: existing file, got: file not found: bittle.urdf)

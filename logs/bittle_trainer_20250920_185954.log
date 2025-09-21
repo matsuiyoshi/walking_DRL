@@ -1,0 +1,16 @@
+2025-09-20 18:59:54,301 | bittle_trainer |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-20 18:59:54.301879 ===
+2025-09-20 18:59:54,301 | bittle_trainer |     INFO | logger.py:86 | info() | === Bittle学習システム初期化開始 ===
+2025-09-20 18:59:54,303 | bittle_trainer |     INFO | logger.py:86 | info() | 設定ファイルの読み込み完了 | Data: {"config_path": "configs/experiment.yaml"}
+2025-09-20 18:59:54,303 | bittle_trainer |     INFO | logger.py:86 | info() | Bittle学習システム初期化完了
+2025-09-20 18:59:54,303 | bittle_trainer |     INFO | logger.py:86 | info() | === 学習開始 ===
+2025-09-20 18:59:54,303 | bittle_trainer |     INFO | logger.py:86 | info() | 環境の初期化...
+2025-09-20 18:59:54,303 | bittle_trainer |     INFO | logger.py:86 | info() | シングルプロセス環境を作成
+2025-09-20 18:59:54,683 | bittle_trainer |     INFO | logger.py:86 | info() | 環境作成完了
+2025-09-20 18:59:54,901 | bittle_trainer |     INFO | logger.py:86 | info() | 評価環境作成完了
+2025-09-20 18:59:54,901 | bittle_trainer |     INFO | logger.py:86 | info() | モデルの初期化...
+2025-09-20 18:59:55,479 | bittle_trainer |     INFO | logger.py:86 | info() | PPOモデル作成完了 | Data: {"learning_rate": 0.0003, "batch_size": 32, "tensorboard_log": "./logs/tensorboard"}
+2025-09-20 18:59:55,479 | bittle_trainer |     INFO | logger.py:86 | info() | コールバックの初期化...
+2025-09-20 18:59:55,479 | bittle_trainer |     INFO | logger.py:86 | info() | コールバック作成完了 | Data: {"eval_frequency": 10000, "save_frequency": 10000}
+2025-09-20 18:59:55,479 | bittle_trainer |     INFO | logger.py:86 | info() | 学習パラメータ | Data: {"total_timesteps": 50000, "algorithm": "PPO", "learning_rate": 0.0003, "batch_size": 32}
+2025-09-20 18:59:55,479 | bittle_trainer |     INFO | logger.py:86 | info() | 学習実行開始...
+2025-09-20 18:59:55,657 | bittle_trainer |    ERROR | logger.py:102 | error() | 学習中にエラーが発生しました | Exception: ImportError: Trying to log data to tensorboard but tensorboard is not installed.

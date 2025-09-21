@@ -1,0 +1,5 @@
+2025-09-20 18:58:17,477 | config_validator |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-20 18:58:17.477465 ===
+2025-09-20 18:58:17,477 | config_validator |     INFO | logger.py:86 | info() | 設定の検証を開始 | Data: {"config_keys": ["environment", "robot", "rewards", "termination", "training", "logging"]}
+2025-09-20 18:58:17,477 | config_validator |    ERROR | logger.py:102 | error() | 設定の検証に失敗しました | Exception: ConfigValidationError: Configuration validation failed for key: robot.urdf_path (expected: existing file, got: file not found: bittle.urdf)
+2025-09-20 18:58:17,478 | config_validator |     INFO | logger.py:86 | info() | 設定の検証を開始 | Data: {"config_keys": ["environment", "robot", "rewards", "termination", "training", "logging"]}
+2025-09-20 18:58:17,478 | config_validator |    ERROR | logger.py:102 | error() | 設定の検証に失敗しました | Exception: ConfigValidationError: Configuration validation failed for key: robot.urdf_path (expected: existing file, got: file not found: bittle.urdf)

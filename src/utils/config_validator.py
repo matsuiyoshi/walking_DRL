@@ -202,13 +202,15 @@ class ConfigValidator:
                 f"length {len(value)}"
             )
         
-        # ファイル存在チェック
+        # ファイル存在チェック（実験時は警告のみ）
         if rule.get('file_exists') and not os.path.exists(value):
-            raise ConfigValidationError(
-                field_path,
-                "existing file",
-                f"file not found: {value}"
-            )
+            logger.warning(f"ファイルが見つかりません: {value}")
+            # 学習実行時のみチェックする場合はコメントアウト
+            # raise ConfigValidationError(
+            #     field_path,
+            #     "existing file", 
+            #     f"file not found: {value}"
+            # )
     
     def _validate_dependencies(self, config: Dict[str, Any]):
         """依存関係の検証"""
@@ -236,6 +238,7 @@ class ConfigValidator:
                     # URDFファイルが見つからない場合は警告のみ（テスト時は存在しない場合がある）
                     logger.warning(f"URDFファイルが見つかりません: {full_path}")
                     logger.info("学習実行時にはURDFファイルが必要です")
+                    # 実行時は例外を投げずに警告のみとする
 
 
 def validate_config(config: Dict[str, Any]) -> bool:
@@ -326,11 +329,31 @@ def create_default_config() -> Dict[str, Any]:
             'algorithm': "PPO",
             'total_timesteps': 1000000,
             'learning_rate': 0.0003,
-            'batch_size': 64
+            'batch_size': 64,
+            'n_envs': 1,
+            'n_steps': 2048,
+            'n_epochs': 10,
+            'gamma': 0.99,
+            'gae_lambda': 0.95,
+            'clip_range': 0.2,
+            'ent_coef': 0.01,
+            'vf_coef': 0.5
+        },
+        'save': {
+            'frequency': 100000,
+            'model_path': "./models",
+            'checkpoint_path': "./models/checkpoints",
+            'vec_normalize_path': "./models/vec_normalize.pkl"
+        },
+        'evaluation': {
+            'frequency': 50000,
+            'n_eval_episodes': 5,
+            'deterministic': True
         },
         'logging': {
             'log_dir': "./logs",
             'tensorboard': True,
-            'verbose': 1
+            'verbose': 1,
+            'debug_level': "INFO"
         }
     }

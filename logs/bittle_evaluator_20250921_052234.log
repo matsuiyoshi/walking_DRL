@@ -1,0 +1,8 @@
+2025-09-21 05:22:34,837 | bittle_evaluator |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-21 05:22:34.837982 ===
+2025-09-21 05:22:34,838 | bittle_evaluator |     INFO | logger.py:86 | info() | === Bittle評価システム初期化開始 ===
+2025-09-21 05:22:34,839 | bittle_evaluator |     INFO | logger.py:86 | info() | Bittle評価システム初期化完了
+2025-09-21 05:22:34,839 | bittle_evaluator |     INFO | logger.py:86 | info() | モデル評価開始 | Data: {"num_episodes": 10, "deterministic": true, "render": true}
+2025-09-21 05:22:34,839 | bittle_evaluator |     INFO | logger.py:86 | info() | モデルと環境の読み込み開始
+2025-09-21 05:22:35,201 | bittle_evaluator |  WARNING | logger.py:93 | warning() | VecNormalizeファイルが見つかりません: ./models/vec_normalize.pkl
+2025-09-21 05:22:35,590 | bittle_evaluator |     INFO | logger.py:86 | info() | モデルと環境の読み込み完了 | Data: {"model_path": "models/best_model/best_model.zip", "vec_normalize_path": "./models/vec_normalize.pkl"}
+2025-09-21 05:22:38,996 | bittle_evaluator |    ERROR | logger.py:102 | error() | モデル評価エラー | Exception: TypeError: Object of type float32 is not JSON serializable

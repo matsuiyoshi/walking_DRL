@@ -31,7 +31,7 @@ class DebugCallback(BaseCallback):
     
     def __init__(self, verbose=0):
         super().__init__(verbose)
-        self.logger = get_logger("training_callback")
+        self.debug_logger = get_logger("training_callback")
         self.episode_rewards = []
         self.episode_lengths = []
         self.performance_history = []
@@ -51,7 +51,7 @@ class DebugCallback(BaseCallback):
                 mean_reward = np.mean(self.episode_rewards[-100:])
                 mean_length = np.mean(self.episode_lengths[-100:])
                 
-                self.logger.info("エピソード完了", {
+                self.debug_logger.info("エピソード完了", {
                     "episode": len(self.episode_rewards),
                     "episode_reward": episode_reward,
                     "episode_length": episode_length,
@@ -63,7 +63,7 @@ class DebugCallback(BaseCallback):
     
     def _on_training_end(self) -> None:
         """学習終了時のコールバック"""
-        self.logger.info("学習完了統計", {
+        self.debug_logger.info("学習完了統計", {
             "total_episodes": len(self.episode_rewards),
             "mean_reward": np.mean(self.episode_rewards) if self.episode_rewards else 0,
             "std_reward": np.std(self.episode_rewards) if self.episode_rewards else 0,
@@ -190,6 +190,8 @@ class BittleTrainer:
                 return BittleEnvironment(self.config, render_mode=None)
             
             eval_env = DummyVecEnv([make_eval_env])
+            # 学習環境と同じ正規化を適用
+            eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=True, training=False)
             
             self.logger.info("評価環境作成完了")
             return eval_env
@@ -457,9 +459,9 @@ def resume_training(checkpoint_path: str, config_path: str = "configs/default.ya
 if __name__ == "__main__":
     import argparse
     try:
-    import torch
-except ImportError:
-    torch = None
+        import torch
+    except ImportError:
+        torch = None
     
     parser = argparse.ArgumentParser(description='Bittle四足歩行ロボット学習')
     parser.add_argument('--config', type=str, default='configs/default.yaml',

@@ -1,0 +1,16 @@
+2025-09-20 10:08:46,531 | bittle_trainer |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-20 10:08:46.531039 ===
+2025-09-20 10:08:46,531 | bittle_trainer |     INFO | logger.py:86 | info() | === Bittle学習システム初期化開始 ===
+2025-09-20 10:08:46,532 | bittle_trainer |     INFO | logger.py:86 | info() | 設定ファイルの読み込み完了 | Data: {"config_path": "configs/production.yaml"}
+2025-09-20 10:08:46,532 | bittle_trainer |     INFO | logger.py:86 | info() | Bittle学習システム初期化完了
+2025-09-20 10:08:46,532 | bittle_trainer |     INFO | logger.py:86 | info() | === 学習開始 ===
+2025-09-20 10:08:46,532 | bittle_trainer |     INFO | logger.py:86 | info() | 環境の初期化...
+2025-09-20 10:08:46,532 | bittle_trainer |     INFO | logger.py:86 | info() | シングルプロセス環境を作成
+2025-09-20 10:08:46,919 | bittle_trainer |     INFO | logger.py:86 | info() | 環境作成完了
+2025-09-20 10:08:47,133 | bittle_trainer |     INFO | logger.py:86 | info() | 評価環境作成完了
+2025-09-20 10:08:47,133 | bittle_trainer |     INFO | logger.py:86 | info() | モデルの初期化...
+2025-09-20 10:08:47,581 | bittle_trainer |     INFO | logger.py:86 | info() | PPOモデル作成完了 | Data: {"learning_rate": 0.0003, "batch_size": 64, "tensorboard_log": "./logs/tensorboard"}
+2025-09-20 10:08:47,581 | bittle_trainer |     INFO | logger.py:86 | info() | コールバックの初期化...
+2025-09-20 10:08:47,581 | bittle_trainer |     INFO | logger.py:86 | info() | コールバック作成完了 | Data: {"eval_frequency": 25000, "save_frequency": 50000}
+2025-09-20 10:08:47,581 | bittle_trainer |     INFO | logger.py:86 | info() | 学習パラメータ | Data: {"total_timesteps": 2000000, "algorithm": "PPO", "learning_rate": 0.0003, "batch_size": 64}
+2025-09-20 10:08:47,581 | bittle_trainer |     INFO | logger.py:86 | info() | 学習実行開始...
+2025-09-20 10:08:47,774 | bittle_trainer |    ERROR | logger.py:102 | error() | 学習中にエラーが発生しました | Exception: ImportError: You must install tqdm and rich in order to use the progress bar callback. It is included if you install stable-baselines with the extra packages: `pip install stable-baselines3[extra]`

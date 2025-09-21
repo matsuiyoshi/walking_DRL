@@ -1,0 +1,43 @@
+# 最小限の実験用Dockerfile
+FROM python:3.11-slim
+
+# 環境変数の設定
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV DISPLAY=:99
+
+# システムパッケージの更新とインストール（最小限）
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    libgl1-mesa-dev \
+    libglib2.0-0 \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/*
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# 最小限の依存関係をインストール
+RUN pip install --no-cache-dir \
+    numpy \
+    gymnasium \
+    stable-baselines3 \
+    pybullet \
+    pyyaml \
+    matplotlib
+
+# プロジェクトのソースコードをコピー
+COPY . /app/
+
+# PyBulletのGUI表示用設定（Xvfb使用）
+RUN echo '#!/bin/bash\nXvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &\nexport DISPLAY=:99\nexec "$@"' > /usr/local/bin/xvfb-run-custom && \
+    chmod +x /usr/local/bin/xvfb-run-custom
+
+# 起動スクリプト
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# デフォルトコマンド
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["bash"]

@@ -1,0 +1,10 @@
+2025-09-20 18:58:56,016 | bittle_trainer |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-20 18:58:56.016575 ===
+2025-09-20 18:58:56,016 | bittle_trainer |     INFO | logger.py:86 | info() | === Bittle学習システム初期化開始 ===
+2025-09-20 18:58:56,018 | bittle_trainer |    ERROR | logger.py:102 | error() | 設定ファイル読み込みエラー | Exception: ConfigValidationError: Configuration validation failed for key: robot.urdf_path (expected: existing file, got: file not found: bittle.urdf)
+2025-09-20 18:58:56,018 | bittle_trainer |     INFO | logger.py:86 | info() | デフォルト設定にフォールバック
+2025-09-20 18:58:56,018 | bittle_trainer |     INFO | logger.py:86 | info() | Bittle学習システム初期化完了
+2025-09-20 18:58:56,018 | bittle_trainer |     INFO | logger.py:86 | info() | === 学習開始 ===
+2025-09-20 18:58:56,018 | bittle_trainer |     INFO | logger.py:86 | info() | 環境の初期化...
+2025-09-20 18:58:56,018 | bittle_trainer |     INFO | logger.py:86 | info() | シングルプロセス環境を作成
+2025-09-20 18:58:56,018 | bittle_trainer |    ERROR | logger.py:102 | error() | 環境作成エラー | Exception: AttributeError: 'BittleEnvironment' object has no attribute 'physics_client'
+2025-09-20 18:58:56,018 | bittle_trainer |    ERROR | logger.py:102 | error() | 学習中にエラーが発生しました | Exception: AttributeError: 'BittleEnvironment' object has no attribute 'physics_client'

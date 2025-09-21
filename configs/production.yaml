@@ -1,0 +1,56 @@
+# 本格的な学習用設定
+environment:
+  name: "BittleWalking-v0"
+  max_episode_steps: 1000  # 長いエピソード
+  control_frequency: 50
+  physics_frequency: 240
+  gravity: -9.81
+  
+robot:
+  urdf_path: "bittle.urdf"
+  initial_position: [0.0, 0.0, 0.1]
+  initial_orientation: [0.0, 0.0, 0.0]
+  joint_limits: [-1.57, 1.57]
+  max_torque: 10.0
+  
+rewards:
+  forward_velocity_weight: 15.0  # 前進速度の重み増加
+  survival_reward: 2.0           # 生存報酬増加
+  fall_penalty: -200.0           # 転倒ペナルティ強化
+  energy_efficiency_weight: -0.005  # エネルギー効率
+  
+termination:
+  min_height: 0.05
+  max_roll: 60.0   # 少し緩く
+  max_pitch: 60.0  # 少し緩く
+
+training:
+  algorithm: "PPO"
+  total_timesteps: 2000000  # 200万ステップ
+  n_envs: 1
+  n_steps: 1024            # ステップ数増加
+  learning_rate: 0.0003
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  
+save:
+  frequency: 50000         # 5万ステップごとに保存
+  model_path: "./models"
+  checkpoint_path: "./models/checkpoints"
+  vec_normalize_path: "./models/vec_normalize.pkl"
+  
+evaluation:
+  frequency: 25000         # 2.5万ステップごとに評価
+  n_eval_episodes: 5
+  deterministic: true
+  
+logging:
+  log_dir: "./logs"
+  tensorboard: true
+  verbose: 1
+  debug_level: "INFO"

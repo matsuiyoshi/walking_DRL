@@ -201,17 +201,17 @@ class BittleEvaluator:
             'episode_reward': episode_reward,
             'episode_length': episode_length,
             'episode_duration': episode_duration,
-            'mean_forward_velocity': np.mean(forward_velocities) if forward_velocities else 0,
-            'mean_robot_height': np.mean(robot_heights) if robot_heights else 0,
+            'mean_forward_velocity': float(np.mean(forward_velocities)) if forward_velocities else 0.0,
+            'mean_robot_height': float(np.mean(robot_heights)) if robot_heights else 0.0,
             'energy_consumption': energy_consumption,
-            'forward_velocities': forward_velocities,
-            'robot_heights': robot_heights,
-            'actions_taken': actions_taken
+            'forward_velocities': [float(v) for v in forward_velocities],
+            'robot_heights': [float(h) for h in robot_heights],
+            'actions_taken': [[float(a) for a in action] for action in actions_taken]
         }
         
         self.logger.debug(f"エピソード {episode_num + 1} 完了", {
-            "reward": episode_reward,
-            "length": episode_length,
+            "reward": float(episode_reward),
+            "length": int(episode_length),
             "duration": f"{episode_duration:.2f}s"
         })
         
@@ -301,7 +301,19 @@ class BittleEvaluator:
         # JSON形式で詳細結果を保存
         json_path = results_dir / f"evaluation_results_{timestamp}.json"
         with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(analysis_result, f, indent=2, ensure_ascii=False)
+            # float32をfloatに変換してJSONシリアライゼーション可能にする
+            def convert_float32(obj):
+                if isinstance(obj, dict):
+                    return {k: convert_float32(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_float32(item) for item in obj]
+                elif hasattr(obj, 'dtype') and 'float32' in str(obj.dtype):
+                    return float(obj)
+                else:
+                    return obj
+            
+            converted_result = convert_float32(analysis_result)
+            json.dump(converted_result, f, indent=2, ensure_ascii=False)
         
         # グラフの作成と保存
         self._create_evaluation_plots(analysis_result, results_dir, timestamp)
