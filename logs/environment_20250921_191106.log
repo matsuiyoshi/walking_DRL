@@ -1,0 +1,10 @@
+2025-09-21 19:11:06,165 | environment |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-21 19:11:06.165338 ===
+2025-09-21 19:11:06,165 | environment |     INFO | logger.py:86 | info() | === Bittle環境の初期化開始 ===
+2025-09-21 19:11:06,170 | environment |     INFO | logger.py:86 | info() | ダイレクトモードで物理エンジンを初期化
+2025-09-21 19:11:06,517 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 0, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:11:06,517 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:11:06,518 | environment |     INFO | logger.py:86 | info() | 状態・行動空間の定義完了 | Data: {"action_space_shape": [8], "observation_space_shape": [22], "joint_limits": [-1.2, 1.2]}
+2025-09-21 19:11:06,518 | environment |     INFO | logger.py:86 | info() | 報酬関数設定完了 | Data: {"reward_weights": {"forward_velocity": 10.0, "survival": 1.0, "fall_penalty": -100.0, "energy_efficiency": -0.01}}
+2025-09-21 19:11:06,518 | environment |     INFO | logger.py:86 | info() | Bittle環境の初期化が完了しました
+2025-09-21 19:11:06,813 | environment |     INFO | logger.py:86 | info() | 環境のクリーンアップ開始
+2025-09-21 19:11:06,819 | environment |     INFO | logger.py:86 | info() | 環境のクリーンアップ完了

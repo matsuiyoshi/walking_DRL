@@ -1,0 +1,96 @@
+2025-09-21 19:10:06,526 | environment |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-21 19:10:06.526901 ===
+2025-09-21 19:10:06,526 | environment |     INFO | logger.py:86 | info() | === Bittle環境の初期化開始 ===
+2025-09-21 19:10:06,531 | environment |     INFO | logger.py:86 | info() | ダイレクトモードで物理エンジンを初期化
+2025-09-21 19:10:06,875 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 0, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:10:06,875 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 2, "joint_name": "left-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 3, "joint_name": "left-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 4, "joint_name": "left-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 5, "joint_name": "left-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 8, "joint_name": "right-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 9, "joint_name": "right-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 10, "joint_name": "right-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:06,875 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 11, "joint_name": "right-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:06,875 | environment |     INFO | logger.py:86 | info() | 状態・行動空間の定義完了 | Data: {"action_space_shape": [8], "observation_space_shape": [22], "joint_limits": [-1.57, 1.57]}
+2025-09-21 19:10:06,876 | environment |     INFO | logger.py:86 | info() | 報酬関数設定完了 | Data: {"reward_weights": {"forward_velocity": 10.0, "survival": 1.0, "fall_penalty": -100.0, "energy_efficiency": -0.01}}
+2025-09-21 19:10:06,876 | environment |     INFO | logger.py:86 | info() | Bittle環境の初期化が完了しました
+2025-09-21 19:10:07,596 | environment |     INFO | logger.py:86 | info() | === エピソード 1 開始 ===
+2025-09-21 19:10:07,602 | environment |  WARNING | logger.py:93 | warning() | plane.urdfが見つからないため、シンプルな地面を作成します
+2025-09-21 19:10:07,771 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 1, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:10:07,771 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 2, "joint_name": "left-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 3, "joint_name": "left-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 4, "joint_name": "left-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 5, "joint_name": "left-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 8, "joint_name": "right-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 9, "joint_name": "right-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 10, "joint_name": "right-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:07,771 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 11, "joint_name": "right-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:07,772 | environment |     INFO | logger.py:86 | info() | 環境リセット完了 | Data: {"episode": 2, "reset_time": "0.176s"}
+2025-09-21 19:10:07,895 | environment |     INFO | logger.py:86 | info() | === エピソード 2 開始 ===
+2025-09-21 19:10:07,901 | environment |  WARNING | logger.py:93 | warning() | plane.urdfが見つからないため、シンプルな地面を作成します
+2025-09-21 19:10:08,075 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 1, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:10:08,075 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 2, "joint_name": "left-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 3, "joint_name": "left-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 4, "joint_name": "left-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 5, "joint_name": "left-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 8, "joint_name": "right-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 9, "joint_name": "right-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 10, "joint_name": "right-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,075 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 11, "joint_name": "right-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,076 | environment |     INFO | logger.py:86 | info() | 環境リセット完了 | Data: {"episode": 3, "reset_time": "0.182s"}
+2025-09-21 19:10:08,076 | environment |     INFO | logger.py:86 | info() | === エピソード 3 開始 ===
+2025-09-21 19:10:08,082 | environment |  WARNING | logger.py:93 | warning() | plane.urdfが見つからないため、シンプルな地面を作成します
+2025-09-21 19:10:08,254 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 1, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:10:08,255 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 2, "joint_name": "left-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 3, "joint_name": "left-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 4, "joint_name": "left-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 5, "joint_name": "left-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 8, "joint_name": "right-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 9, "joint_name": "right-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 10, "joint_name": "right-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,255 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 11, "joint_name": "right-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,255 | environment |     INFO | logger.py:86 | info() | 環境リセット完了 | Data: {"episode": 4, "reset_time": "0.179s"}
+2025-09-21 19:10:08,326 | environment |     INFO | logger.py:86 | info() | === エピソード 4 開始 ===
+2025-09-21 19:10:08,332 | environment |  WARNING | logger.py:93 | warning() | plane.urdfが見つからないため、シンプルな地面を作成します
+2025-09-21 19:10:08,520 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 1, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:10:08,520 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:10:08,520 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 2, "joint_name": "left-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,520 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 3, "joint_name": "left-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,520 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 4, "joint_name": "left-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,520 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 5, "joint_name": "left-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,521 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 8, "joint_name": "right-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,521 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 9, "joint_name": "right-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,521 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 10, "joint_name": "right-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,521 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 11, "joint_name": "right-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,521 | environment |     INFO | logger.py:86 | info() | 環境リセット完了 | Data: {"episode": 5, "reset_time": "0.196s"}
+2025-09-21 19:10:08,522 | environment |     INFO | logger.py:86 | info() | === エピソード 5 開始 ===
+2025-09-21 19:10:08,528 | environment |  WARNING | logger.py:93 | warning() | plane.urdfが見つからないため、シンプルな地面を作成します
+2025-09-21 19:10:08,730 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 1, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:10:08,730 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 2, "joint_name": "left-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 3, "joint_name": "left-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 4, "joint_name": "left-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 5, "joint_name": "left-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 8, "joint_name": "right-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 9, "joint_name": "right-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 10, "joint_name": "right-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,730 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 11, "joint_name": "right-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,731 | environment |     INFO | logger.py:86 | info() | 環境リセット完了 | Data: {"episode": 6, "reset_time": "0.209s"}
+2025-09-21 19:10:08,802 | environment |     INFO | logger.py:86 | info() | === エピソード 6 開始 ===
+2025-09-21 19:10:08,809 | environment |  WARNING | logger.py:93 | warning() | plane.urdfが見つからないため、シンプルな地面を作成します
+2025-09-21 19:10:08,984 | environment |     INFO | logger.py:86 | info() | ロボットモデルの読み込み成功 | Data: {"robot_id": 1, "initial_position": [0.0, 0.0, 0.1]}
+2025-09-21 19:10:08,984 | environment |     INFO | logger.py:86 | info() | 関節情報解析完了 | Data: {"total_joints": 12, "controllable_joints": 8, "joint_indices": [2, 3, 4, 5, 8, 9, 10, 11]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 2, "joint_name": "left-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 3, "joint_name": "left-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 4, "joint_name": "left-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 5, "joint_name": "left-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 8, "joint_name": "right-back-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 9, "joint_name": "right-back-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 10, "joint_name": "right-front-shoulder-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.5708, 1.22173]}
+2025-09-21 19:10:08,984 | environment |  WARNING | logger.py:93 | warning() | 関節制限が物理制限を超えています | Data: {"joint_idx": 11, "joint_name": "right-front-knee-joint", "config_limits": [-1.57, 1.57], "physical_limits": [-1.22173, 1.48353]}
+2025-09-21 19:10:08,985 | environment |     INFO | logger.py:86 | info() | 環境リセット完了 | Data: {"episode": 7, "reset_time": "0.183s"}
+2025-09-21 19:10:09,401 | environment |     INFO | logger.py:86 | info() | 環境のクリーンアップ開始
+2025-09-21 19:10:09,408 | environment |     INFO | logger.py:86 | info() | 環境のクリーンアップ完了

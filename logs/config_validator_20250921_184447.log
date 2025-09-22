@@ -1,0 +1,10 @@
+2025-09-21 18:44:47,317 | config_validator |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-21 18:44:47.317007 ===
+2025-09-21 18:44:47,317 | config_validator |     INFO | logger.py:86 | info() | 設定の検証を開始 | Data: {"config_keys": ["environment", "robot", "rewards", "termination", "training", "save", "evaluation", "logging"]}
+2025-09-21 18:44:47,317 | config_validator |  WARNING | logger.py:93 | warning() | ファイルが見つかりません: bittle.urdf
+2025-09-21 18:44:47,317 | config_validator |     INFO | logger.py:86 | info() | 設定の検証が成功しました
+2025-09-21 18:44:47,317 | config_validator |     INFO | logger.py:86 | info() | 設定の検証を開始 | Data: {"config_keys": ["environment", "robot", "rewards", "termination", "training", "save", "evaluation", "logging"]}
+2025-09-21 18:44:47,317 | config_validator |  WARNING | logger.py:93 | warning() | ファイルが見つかりません: bittle.urdf
+2025-09-21 18:44:47,317 | config_validator |     INFO | logger.py:86 | info() | 設定の検証が成功しました
+2025-09-21 18:44:47,317 | config_validator |     INFO | logger.py:86 | info() | 設定の検証を開始 | Data: {"config_keys": ["environment", "robot", "rewards", "termination", "training", "save", "evaluation", "logging"]}
+2025-09-21 18:44:47,317 | config_validator |  WARNING | logger.py:93 | warning() | ファイルが見つかりません: bittle.urdf
+2025-09-21 18:44:47,317 | config_validator |    ERROR | logger.py:102 | error() | 設定の検証に失敗しました | Exception: ConfigValidationError: Configuration validation failed for key: environment.control_frequency (expected: <= physics_frequency (100), got: 1000)

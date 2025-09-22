@@ -595,13 +595,55 @@ class BittleEnvironment(gym.Env):
         energy_penalty = np.sum(np.abs(action)) * abs(self.reward_weights['energy_efficiency'])
         reward_breakdown['energy_efficiency'] = -energy_penalty
         
+        # 5. 高さ安定性報酬（ジャンプ抑制・安定歩行促進）
+        position, _ = p.getBasePositionAndOrientation(self.robot_id)
+        height = position[2]
+        target_height = self.reward_weights.get('target_height', 0.1)
+        height_stability = -abs(height - target_height) * self.reward_weights.get('height_stability_weight', 5.0)
+        reward_breakdown['height_stability'] = height_stability
+        
+        # 6. 垂直速度ペナルティ（ジャンプ・落下抑制）
+        vertical_velocity = velocity[2]  # Z方向の速度
+        vertical_penalty = -abs(vertical_velocity) * self.reward_weights.get('vertical_velocity_penalty', 2.0)
+        reward_breakdown['vertical_velocity_penalty'] = vertical_penalty
+        
+        # 7. 前進距離報酬（真の前進を促進）
+        if not hasattr(self, 'initial_position'):
+            self.initial_position = position
+        distance_traveled = position[0] - self.initial_position[0]  # X方向の移動距離
+        distance_reward = distance_traveled * self.reward_weights.get('distance_weight', 1.0)
+        reward_breakdown['distance_traveled'] = distance_reward
+        
         # 合計報酬
         total_reward = sum(reward_breakdown.values())
         reward_breakdown['total'] = total_reward
         
+        # デバッグ用の詳細ログ出力
+        self._log_reward_breakdown(reward_breakdown, height, vertical_velocity, distance_traveled)
+        
         self.debug_info['last_reward_breakdown'] = reward_breakdown
         
         return total_reward, reward_breakdown
+    
+    def _log_reward_breakdown(self, reward_breakdown: Dict, height: float, vertical_velocity: float, distance_traveled: float):
+        """報酬内訳の詳細ログ出力（デバッグ用）"""
+        if self.episode_steps % 50 == 0:  # 50ステップごとにログ出力
+            self.logger.debug("報酬内訳詳細", {
+                "episode_steps": self.episode_steps,
+                "height": float(height),
+                "vertical_velocity": float(vertical_velocity),
+                "distance_traveled": float(distance_traveled),
+                "reward_breakdown": {
+                    "forward_velocity": float(reward_breakdown.get('forward_velocity', 0)),
+                    "survival": float(reward_breakdown.get('survival', 0)),
+                    "fall_penalty": float(reward_breakdown.get('fall_penalty', 0)),
+                    "energy_efficiency": float(reward_breakdown.get('energy_efficiency', 0)),
+                    "height_stability": float(reward_breakdown.get('height_stability', 0)),
+                    "vertical_velocity_penalty": float(reward_breakdown.get('vertical_velocity_penalty', 0)),
+                    "distance_traveled": float(reward_breakdown.get('distance_traveled', 0)),
+                    "total": float(reward_breakdown.get('total', 0))
+                }
+            })
     
     def _is_fallen(self) -> bool:
         """転倒判定"""

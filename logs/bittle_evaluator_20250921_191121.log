@@ -1,0 +1,9 @@
+2025-09-21 19:11:21,482 | bittle_evaluator |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-21 19:11:21.482841 ===
+2025-09-21 19:11:21,482 | bittle_evaluator |     INFO | logger.py:86 | info() | === Bittle評価システム初期化開始 ===
+2025-09-21 19:11:21,484 | bittle_evaluator |     INFO | logger.py:86 | info() | Bittle評価システム初期化完了
+2025-09-21 19:11:21,484 | bittle_evaluator |     INFO | logger.py:86 | info() | モデル評価開始 | Data: {"num_episodes": 3, "deterministic": true, "render": false}
+2025-09-21 19:11:21,484 | bittle_evaluator |     INFO | logger.py:86 | info() | モデルと環境の読み込み開始
+2025-09-21 19:11:21,833 | bittle_evaluator |  WARNING | logger.py:93 | warning() | VecNormalizeファイルが見つかりません: ./models/vec_normalize.pkl
+2025-09-21 19:11:22,535 | bittle_evaluator |     INFO | logger.py:86 | info() | モデルと環境の読み込み完了 | Data: {"model_path": "models/best_model_backup.zip", "vec_normalize_path": "./models/vec_normalize.pkl"}
+2025-09-21 19:11:24,294 | bittle_evaluator |     INFO | logger.py:86 | info() | 評価結果保存完了 | Data: {"json_path": "evaluation_results/evaluation_results_20250921_191123.json", "results_dir": "evaluation_results"}
+2025-09-21 19:11:24,294 | bittle_evaluator |     INFO | logger.py:86 | info() | モデル評価完了 | Data: {"total_episodes": 3, "mean_reward": -4226.9384765625, "std_reward": 0.0, "min_reward": -4226.9384765625, "max_reward": -4226.9384765625, "mean_episode_length": 151.0, "std_episode_length": 0.0, "mean_forward_velocity": 0.37764382177196704, "std_forward_velocity": 5.551115123125783e-17, "mean_robot_height": 4.274763652239766, "mean_energy_consumption": 1586.2437744140625}

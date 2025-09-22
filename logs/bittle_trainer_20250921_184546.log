@@ -1,0 +1,16 @@
+2025-09-21 18:45:46,793 | bittle_trainer |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-21 18:45:46.793208 ===
+2025-09-21 18:45:46,793 | bittle_trainer |     INFO | logger.py:86 | info() | === Bittle学習システム初期化開始 ===
+2025-09-21 18:45:46,794 | bittle_trainer |     INFO | logger.py:86 | info() | 設定ファイルの読み込み完了 | Data: {"config_path": "configs/default.yaml"}
+2025-09-21 18:45:46,794 | bittle_trainer |     INFO | logger.py:86 | info() | Bittle学習システム初期化完了
+2025-09-21 18:45:46,794 | bittle_trainer |     INFO | logger.py:86 | info() | === 学習開始 ===
+2025-09-21 18:45:46,794 | bittle_trainer |     INFO | logger.py:86 | info() | 環境の初期化...
+2025-09-21 18:45:46,794 | bittle_trainer |     INFO | logger.py:86 | info() | マルチプロセス環境を作成 (n_envs=4)
+2025-09-21 18:45:47,707 | bittle_trainer |     INFO | logger.py:86 | info() | 環境作成完了
+2025-09-21 18:45:47,894 | bittle_trainer |     INFO | logger.py:86 | info() | 評価環境作成完了
+2025-09-21 18:45:47,894 | bittle_trainer |     INFO | logger.py:86 | info() | モデルの初期化...
+2025-09-21 18:45:48,587 | bittle_trainer |     INFO | logger.py:86 | info() | PPOモデル作成完了 | Data: {"learning_rate": 0.0003, "batch_size": 64, "tensorboard_log": "./logs/tensorboard"}
+2025-09-21 18:45:48,587 | bittle_trainer |     INFO | logger.py:86 | info() | コールバックの初期化...
+2025-09-21 18:45:48,588 | bittle_trainer |     INFO | logger.py:86 | info() | コールバック作成完了 | Data: {"eval_frequency": 50000, "save_frequency": 100000}
+2025-09-21 18:45:48,588 | bittle_trainer |     INFO | logger.py:86 | info() | 学習パラメータ | Data: {"total_timesteps": 1000000, "algorithm": "PPO", "learning_rate": 0.0003, "batch_size": 64}
+2025-09-21 18:45:48,588 | bittle_trainer |     INFO | logger.py:86 | info() | 学習実行開始...
+2025-09-21 19:00:15,573 | bittle_trainer |    ERROR | logger.py:102 | error() | 学習中にエラーが発生しました | Exception: PermissionError: [Errno 13] Permission denied: 'models/best_model/best_model.zip'
