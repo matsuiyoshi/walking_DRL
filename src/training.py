@@ -178,7 +178,7 @@ class BittleTrainer:
                 return BittleEnvironment(self.config)
             
             # マルチプロセス環境の作成
-            n_envs = self.config['training'].get('n_envs', 1)
+            n_envs = self.config['training'].get('n_envs', 12)
             if n_envs > 1:
                 self.logger.info(f"マルチプロセス環境を作成 (n_envs={n_envs})")
                 env = make_vec_env(make_env, n_envs=n_envs)
