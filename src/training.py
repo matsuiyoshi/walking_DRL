@@ -108,24 +108,51 @@ class BittleTrainer:
             raise
     
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
-        """設定の読み込み"""
+        """設定の読み込み（安全版）"""
         if config_path is None:
-            self.logger.info("デフォルト設定を使用します")
+            self.logger.warning("設定ファイルが指定されていません。")
+            self.logger.info("デフォルト設定を使用します。")
+            self.logger.info("推奨: python -m src.training --config configs/default.yaml")
             return create_default_config()
         
         if not os.path.exists(config_path):
-            self.logger.warning(f"設定ファイルが見つかりません: {config_path}")
-            self.logger.info("デフォルト設定を使用します")
-            return create_default_config()
+            self.logger.error(f"設定ファイルが見つかりません: {config_path}")
+            self.logger.critical("学習を停止します。正しい設定ファイルを指定してください。")
+            self.logger.info("利用可能な設定ファイル:")
+            self.logger.info("  - configs/default.yaml")
+            self.logger.info("  - configs/experiment.yaml") 
+            self.logger.info("  - configs/production.yaml")
+            raise FileNotFoundError(f"設定ファイルが見つかりません: {config_path}")
         
         try:
             config = load_and_validate_config(config_path)
             self.logger.info("設定ファイルの読み込み完了", {"config_path": config_path})
+            
+            # 設定の要約をログ出力
+            self._log_config_summary(config)
             return config
+            
         except Exception as e:
             self.logger.error("設定ファイル読み込みエラー", exception=e)
-            self.logger.info("デフォルト設定にフォールバック")
-            return create_default_config()
+            self.logger.critical("学習を停止します。設定ファイルを修正してください。")
+            self.logger.info("設定ファイルの構文を確認してください。")
+            raise ConfigValidationError(f"設定ファイルの読み込みに失敗しました: {config_path}") from e
+    
+    def _log_config_summary(self, config: Dict[str, Any]):
+        """設定の要約をログ出力"""
+        self.logger.info("=== 学習設定の要約 ===", {
+            "total_timesteps": config['training']['total_timesteps'],
+            "algorithm": config['training']['algorithm'],
+            "learning_rate": config['training']['learning_rate'],
+            "batch_size": config['training']['batch_size'],
+            "max_episode_steps": config['environment']['max_episode_steps'],
+            "n_envs": config['training'].get('n_envs', 1)
+        })
+        
+        # 本格学習用設定の警告
+        if config['training']['total_timesteps'] > 500000:
+            self.logger.warning("本格的な学習設定が検出されました。")
+            self.logger.warning("学習時間が長くなる可能性があります。")
     
     def _create_directories(self):
         """必要なディレクトリの作成"""
