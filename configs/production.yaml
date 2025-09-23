@@ -33,7 +33,7 @@ termination:
 training:
   algorithm: "PPO"
   total_timesteps: 2000000  # 200万ステップ
-  n_envs: 1
+  n_envs: 12
   n_steps: 1024            # ステップ数増加
   learning_rate: 0.0003
   batch_size: 64

@@ -33,7 +33,7 @@ termination:
 training:
   algorithm: "PPO"
   total_timesteps: 50000  # 実験用に短縮
-  n_envs: 1  # シングル環境
+  n_envs: 12  # シングル環境
   n_steps: 512  # 短縮
   learning_rate: 0.0003
   batch_size: 32  # 小さく
