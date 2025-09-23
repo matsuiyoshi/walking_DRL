@@ -598,8 +598,15 @@ class BittleEnvironment(gym.Env):
             fall_penalty = self.reward_weights['fall_penalty']
         reward_breakdown['fall_penalty'] = fall_penalty
         
-        # 4. エネルギー効率ペナルティ
-        energy_penalty = np.sum(np.abs(action)) * abs(self.reward_weights['energy_efficiency'])
+        # 4. エネルギー効率ペナルティ（角度変化量ベース）
+        if hasattr(self, 'last_action') and self.last_action is not None:
+            # 角度変化量の計算
+            action_change = np.abs(action - self.last_action)
+            total_change = np.sum(action_change)
+            energy_penalty = total_change * abs(self.reward_weights['energy_efficiency'])
+        else:
+            # 初回は変化量を0とする
+            energy_penalty = 0.0
         reward_breakdown['energy_efficiency'] = -energy_penalty
         
         # 5. 高さ安定性報酬（ジャンプ抑制・安定歩行促進）
