@@ -46,18 +46,12 @@ class DebugCallback(BaseCallback):
             self.episode_rewards.append(episode_reward)
             self.episode_lengths.append(episode_length)
             
-            # 最新100エピソードの統計
-            if len(self.episode_rewards) >= 100:
-                mean_reward = np.mean(self.episode_rewards[-100:])
-                mean_length = np.mean(self.episode_lengths[-100:])
-                
-                self.debug_logger.info("エピソード完了", {
-                    "episode": len(self.episode_rewards),
-                    "episode_reward": episode_reward,
-                    "episode_length": episode_length,
-                    "mean_reward_100": mean_reward,
-                    "mean_length_100": mean_length
-                })
+            # シンプルなログ出力（統計計算はTensorBoardに任せる）
+            self.debug_logger.info("エピソード完了", {
+                "episode": len(self.episode_rewards),
+                "episode_reward": episode_reward,
+                "episode_length": episode_length
+            })
         
         return True
     
