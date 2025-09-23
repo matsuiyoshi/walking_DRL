@@ -19,6 +19,12 @@ rewards:
   fall_penalty: -200.0           # 転倒ペナルティ強化
   energy_efficiency_weight: -0.005  # エネルギー効率
   
+  # 前方行進促進のための新しい報酬要素
+  target_height: 0.1                    # 目標高さ（10cm）
+  height_stability_weight: 5.0          # 高さ安定性の重み
+  vertical_velocity_penalty: 2.0        # 垂直速度ペナルティ
+  distance_weight: 1.0                   # 前進距離の重み
+  
 termination:
   min_height: 0.05
   max_roll: 60.0   # 少し緩く

@@ -247,7 +247,7 @@ class BittleEnvironment(gym.Env):
     
     def _validate_joint_limits(self):
         """関節制限の検証"""
-        joint_limits = self.robot_config.get('joint_limits', [-1.57, 1.57])
+        joint_limits = self.robot_config.get('joint_limits', [-1.57, 1.22173])
         
         for joint_idx in self.joint_indices:
             joint_info = self.joint_info[joint_idx]
@@ -270,7 +270,7 @@ class BittleEnvironment(gym.Env):
         
         try:
             # 行動空間: 8次元 (関節目標角度)
-            joint_limits = self.robot_config.get('joint_limits', [-1.57, 1.57])
+            joint_limits = self.robot_config.get('joint_limits', [-1.22173, 1.22173])
             self.action_space = spaces.Box(
                 low=np.array([joint_limits[0]] * 8),
                 high=np.array([joint_limits[1]] * 8),
@@ -300,10 +300,17 @@ class BittleEnvironment(gym.Env):
         self.logger.debug("報酬関数の設定開始")
         
         self.reward_weights = {
+            # 基本報酬要素
             'forward_velocity': self.reward_config.get('forward_velocity_weight', 10.0),
             'survival': self.reward_config.get('survival_reward', 1.0),
             'fall_penalty': self.reward_config.get('fall_penalty', -100.0),
-            'energy_efficiency': self.reward_config.get('energy_efficiency_weight', -0.01)
+            'energy_efficiency': self.reward_config.get('energy_efficiency_weight', -0.01),
+            
+            # 追加報酬要素（default.yaml対応）
+            'target_height': self.reward_config.get('target_height', 0.1),
+            'height_stability_weight': self.reward_config.get('height_stability_weight', 5.0),
+            'vertical_velocity_penalty': self.reward_config.get('vertical_velocity_penalty', 2.0),
+            'distance_weight': self.reward_config.get('distance_weight', 1.0)
         }
         
         self.logger.info("報酬関数設定完了", {"reward_weights": self.reward_weights})
