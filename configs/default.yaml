@@ -32,9 +32,9 @@ rewards:
   
 # 終了条件
 termination:
-  min_height: 0.05
-  max_roll: 60.0   # 度
-  max_pitch: 60.0  # 度
+  min_height: 0.025
+  max_roll: 80.0   # 度
+  max_pitch: 80.0  # 度
 
 # 学習設定
 training:

@@ -26,9 +26,9 @@ rewards:
   distance_weight: 1.0                   # 前進距離の重み
   
 termination:
-  min_height: 0.05
-  max_roll: 45.0
-  max_pitch: 45.0
+  min_height: 0.025
+  max_roll: 80.0
+  max_pitch: 80.0
 
 training:
   algorithm: "PPO"
