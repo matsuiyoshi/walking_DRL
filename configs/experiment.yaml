@@ -11,7 +11,7 @@ robot:
   initial_position: [0.0, 0.0, 0.1]
   initial_orientation: [0.0, 0.0, 0.0]
   joint_limits: [-1.22173, 1.22173]  # -70度 ～ +70度（安全な制限）
-  max_torque: 10.0
+  max_torque: 2.0
   
 rewards:
   forward_velocity_weight: 10.0
