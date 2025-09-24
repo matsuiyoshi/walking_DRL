@@ -1,0 +1,22 @@
+2025-09-24 18:30:52,034 | bittle_trainer |     INFO | logger.py:86 | info() | === ログセッション開始: 2025-09-24 18:30:52.034273 ===
+2025-09-24 18:30:52,034 | bittle_trainer |     INFO | logger.py:86 | info() | === Bittle学習システム初期化開始 ===
+2025-09-24 18:30:52,035 | bittle_trainer |     INFO | logger.py:86 | info() | 設定ファイルの読み込み完了 | Data: {"config_path": "configs/production.yaml"}
+2025-09-24 18:30:52,035 | bittle_trainer |     INFO | logger.py:86 | info() | === 学習設定の要約 === | Data: {"total_timesteps": 2000000, "algorithm": "PPO", "learning_rate": 0.0003, "batch_size": 64, "max_episode_steps": 1000, "n_envs": 12}
+2025-09-24 18:30:52,035 | bittle_trainer |  WARNING | logger.py:93 | warning() | 本格的な学習設定が検出されました。
+2025-09-24 18:30:52,035 | bittle_trainer |  WARNING | logger.py:93 | warning() | 学習時間が長くなる可能性があります。
+2025-09-24 18:30:52,036 | bittle_trainer |     INFO | logger.py:86 | info() | Bittle学習システム初期化完了
+2025-09-24 18:30:52,036 | bittle_trainer |     INFO | logger.py:86 | info() | === 学習開始 ===
+2025-09-24 18:30:52,036 | bittle_trainer |     INFO | logger.py:86 | info() | 環境の初期化...
+2025-09-24 18:30:52,036 | bittle_trainer |     INFO | logger.py:86 | info() | マルチプロセス環境を作成 (n_envs=12)
+2025-09-24 18:30:54,576 | bittle_trainer |     INFO | logger.py:86 | info() | 環境作成完了
+2025-09-24 18:30:55,124 | bittle_trainer |     INFO | logger.py:86 | info() | 評価環境作成完了
+2025-09-24 18:30:55,124 | bittle_trainer |     INFO | logger.py:86 | info() | モデルの初期化...
+2025-09-24 18:30:55,174 | bittle_trainer |     INFO | logger.py:86 | info() | 使用デバイス: cuda
+2025-09-24 18:30:55,187 | bittle_trainer |     INFO | logger.py:86 | info() | GPU名: NVIDIA GeForce RTX 3060 Ti
+2025-09-24 18:30:55,187 | bittle_trainer |     INFO | logger.py:86 | info() | VRAM: 7.6GB
+2025-09-24 18:30:55,695 | bittle_trainer |     INFO | logger.py:86 | info() | PPOモデル作成完了 | Data: {"learning_rate": 0.0003, "batch_size": 64, "tensorboard_log": "./logs/tensorboard"}
+2025-09-24 18:30:55,695 | bittle_trainer |     INFO | logger.py:86 | info() | コールバックの初期化...
+2025-09-24 18:30:55,696 | bittle_trainer |     INFO | logger.py:86 | info() | コールバック作成完了 | Data: {"eval_frequency": 400000, "save_frequency": 100000}
+2025-09-24 18:30:55,696 | bittle_trainer |     INFO | logger.py:86 | info() | 学習パラメータ | Data: {"total_timesteps": 2000000, "algorithm": "PPO", "learning_rate": 0.0003, "batch_size": 64}
+2025-09-24 18:30:55,696 | bittle_trainer |     INFO | logger.py:86 | info() | 学習実行開始...
+2025-09-24 18:45:12,218 | bittle_trainer |    ERROR | logger.py:102 | error() | 学習中にエラーが発生しました | Exception: PermissionError: [Errno 13] Permission denied: 'models/checkpoints/bittle_checkpoint_1200000_steps.zip'
