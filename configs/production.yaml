@@ -37,7 +37,7 @@ training:
   n_steps: 1024            # ステップ数増加
   learning_rate: 0.0003
   batch_size: 64
-  n_epochs: 10
+  n_epochs: 5
   gamma: 0.99
   gae_lambda: 0.95
   clip_range: 0.2

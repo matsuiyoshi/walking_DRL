@@ -389,6 +389,15 @@ class BittleTrainer:
             tb_log_dir = os.path.join(self.config['logging']['log_dir'], 'tensorboard')
             Path(tb_log_dir).mkdir(parents=True, exist_ok=True)
             
+            # デバイスの安全な設定
+            import torch
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            self.logger.info(f"使用デバイス: {device}")
+            
+            if device == 'cuda':
+                self.logger.info(f"GPU名: {torch.cuda.get_device_name()}")
+                self.logger.info(f"VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f}GB")
+            
             model = PPO(
                 policy="MlpPolicy",
                 env=env,
@@ -409,7 +418,7 @@ class BittleTrainer:
                 ),
                 verbose=self.config['logging'].get('verbose', 1),
                 tensorboard_log=tb_log_dir,
-                device='auto'
+                device=device
             )
             
             self.logger.info("PPOモデル作成完了", {
