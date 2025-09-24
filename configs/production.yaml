@@ -45,13 +45,13 @@ training:
   vf_coef: 0.5
   
 save:
-  frequency: 50000         # 5万ステップごとに保存
+  frequency: 100000         # 10万ステップごとに保存
   model_path: "./models"
   checkpoint_path: "./models/checkpoints"
   vec_normalize_path: "./models/vec_normalize.pkl"
   
 evaluation:
-  frequency: 25000         # 2.5万ステップごとに評価
+  frequency: 400000         # 40万ステップごとに評価
   n_eval_episodes: 5
   deterministic: true
   
