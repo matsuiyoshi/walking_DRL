@@ -403,8 +403,8 @@ class BittleEnvironment(gym.Env):
             # ロボットの再読み込み
             self._load_robot()
             
-            # 初期関節角度の設定
-            initial_joint_angles = [0.0] * len(self.joint_indices)
+            # 初期関節角度の設定（±10度のランダム初期化）
+            initial_joint_angles = self._generate_random_joint_angles()
             for i, joint_idx in enumerate(self.joint_indices):
                 p.resetJointState(self.robot_id, joint_idx, initial_joint_angles[i])
             
@@ -419,6 +419,25 @@ class BittleEnvironment(gym.Env):
         except Exception as e:
             self.logger.error("ロボット状態リセットエラー", exception=e)
             raise RobotStateError(self.robot_id) from e
+    
+    def _generate_random_joint_angles(self) -> List[float]:
+        """ランダムな初期関節角度の生成（±10度）"""
+        # ±10度をラジアンに変換
+        max_deviation = np.radians(10.0)  # 10度 = 0.1745ラジアン
+        
+        # 8つの関節角度を±10度の範囲でランダム生成
+        random_angles = []
+        for _ in range(len(self.joint_indices)):
+            # 一様分布で±10度の範囲からランダム選択
+            angle = np.random.uniform(-max_deviation, max_deviation)
+            random_angles.append(float(angle))  # 明示的にfloatに変換
+        
+        self.logger.debug("ランダム関節角度生成", {
+            "angles_degrees": [np.degrees(angle) for angle in random_angles],
+            "angles_radians": random_angles
+        })
+        
+        return random_angles
     
     def _reset_internal_state(self):
         """内部状態のリセット"""
