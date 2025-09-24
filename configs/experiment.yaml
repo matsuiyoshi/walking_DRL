@@ -57,6 +57,6 @@ evaluation:
   
 logging:
   log_dir: "./logs"
-  tensorboard: false
+  tensorboard: true
   verbose: 1
   debug_level: "INFO"
