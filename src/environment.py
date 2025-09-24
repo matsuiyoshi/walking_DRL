@@ -559,6 +559,9 @@ class BittleEnvironment(gym.Env):
                 self.last_action        # 8次元
             ])
             
+            # 個別クリッピングの適用
+            observation = self._apply_observation_clipping(observation)
+            
             # デバッグ情報の保存
             self._store_observation_debug(observation, position, euler_angles, velocity)
             
@@ -567,6 +570,24 @@ class BittleEnvironment(gym.Env):
         except Exception as e:
             self.logger.error("観測取得エラー", exception=e)
             raise RobotStateError(self.robot_id) from e
+    
+    def _apply_observation_clipping(self, observation: np.ndarray) -> np.ndarray:
+        """観測値の個別クリッピング（Bittleサイズ最適化）"""
+        clipped_obs = observation.copy()
+        
+        # 関節角度 (0-7): [-π, π] → [-3.2, 3.2] (ラジアン)
+        clipped_obs[0:8] = np.clip(clipped_obs[0:8], -3.2, 3.2)
+        
+        # 姿勢角度 (8-10): [-π, π] → [-3.2, 3.2] (ラジアン)
+        clipped_obs[8:11] = np.clip(clipped_obs[8:11], -3.2, 3.2)
+        
+        # 速度 (11-13): Bittleサイズに適した範囲 → [-2.0, 2.0] (m/s)
+        clipped_obs[11:14] = np.clip(clipped_obs[11:14], -2.0, 2.0)
+        
+        # 前回アクション (14-21): [-π, π] → [-3.2, 3.2] (ラジアン)
+        clipped_obs[14:22] = np.clip(clipped_obs[14:22], -3.2, 3.2)
+        
+        return clipped_obs
     
     def _store_observation_debug(self, observation: np.ndarray, position: Tuple, 
                                euler_angles: Tuple, velocity: Tuple):

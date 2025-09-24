@@ -189,10 +189,10 @@ class BittleTrainer:
             # 環境の正規化
             env = VecNormalize(
                 env,
-                norm_obs=True,
-                norm_reward=True,
-                clip_obs=10.0,
-                clip_reward=10.0
+                norm_obs=False,        # 無効化: 環境内で個別クリッピング
+                norm_reward=True,       # 有効: 報酬正規化は有用
+                clip_obs=None,          # 無効化: 環境内で処理済み
+                clip_reward=200.0       # 調整: 転倒ペナルティを考慮
             )
             
             self.logger.info("環境作成完了")
