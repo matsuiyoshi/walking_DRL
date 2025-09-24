@@ -66,6 +66,163 @@ class DebugCallback(BaseCallback):
         })
 
 
+class VideoEvalCallback(EvalCallback):
+    """動画保存機能付き評価コールバック"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.video_logger = get_logger("video_eval_callback")
+        self.video_dir = os.path.join(self.log_path, 'evaluation_videos')
+        os.makedirs(self.video_dir, exist_ok=True)
+        self.frames = []
+        self.eval_count = 0
+        
+    def on_eval_start(self):
+        """評価開始時の処理"""
+        super().on_eval_start()
+        
+        # 評価回数のカウント
+        self.eval_count += 1
+        
+        # 動画保存用のディレクトリ作成
+        eval_timestamp = time.strftime('%Y%m%d_%H%M%S')
+        self.current_video_dir = os.path.join(
+            self.video_dir, 
+            f'eval_{self.eval_count:03d}_{eval_timestamp}'
+        )
+        os.makedirs(self.current_video_dir, exist_ok=True)
+        
+        # フレームの初期化
+        self.frames = []
+        
+        self.video_logger.info(f"評価動画保存開始 (評価回数: {self.eval_count})", {
+            "video_dir": self.current_video_dir
+        })
+    
+    def on_eval_end(self):
+        """評価終了時の処理"""
+        super().on_eval_end()
+        
+        # 動画ファイルの保存
+        self.save_evaluation_video()
+    
+    def save_evaluation_video(self):
+        """評価動画の保存"""
+        if not self.frames:
+            self.video_logger.warning("保存するフレームがありません")
+            return
+        
+        # 動画ファイル名の生成
+        eval_info = self._get_evaluation_info()
+        video_filename = self._generate_video_filename(eval_info)
+        video_path = os.path.join(self.current_video_dir, video_filename)
+        
+        try:
+            # フレームを動画に保存
+            self._save_frames_as_video(self.frames, video_path)
+            
+            self.video_logger.info("評価動画保存完了", {
+                "video_path": video_path,
+                "frame_count": len(self.frames),
+                "eval_info": eval_info
+            })
+            
+        except Exception as e:
+            self.video_logger.error("動画保存エラー", exception=e)
+    
+    def _get_evaluation_info(self):
+        """評価情報の取得"""
+        return {
+            'eval_count': self.eval_count,
+            'mean_reward': getattr(self, 'mean_reward', 0.0),
+            'std_reward': getattr(self, 'std_reward', 0.0),
+            'n_eval_episodes': getattr(self, 'n_eval_episodes', 5),
+            'timestep': getattr(self, 'num_timesteps', 0)
+        }
+    
+    def _generate_video_filename(self, eval_info):
+        """動画ファイル名の生成"""
+        # ファイル名の構成要素
+        eval_count = eval_info['eval_count']
+        mean_reward = eval_info['mean_reward']
+        timestep = eval_info['timestep']
+        
+        # 報酬の符号と絶対値
+        reward_sign = "pos" if mean_reward >= 0 else "neg"
+        reward_abs = abs(mean_reward)
+        
+        # ファイル名の生成
+        filename = (
+            f"eval_{eval_count:03d}_"
+            f"step_{timestep}_"
+            f"reward_{reward_sign}_{reward_abs:.1f}_"
+            f"episodes_{eval_info['n_eval_episodes']}.mp4"
+        )
+        
+        return filename
+    
+    def _save_frames_as_video(self, frames, output_path):
+        """フレームを動画ファイルに保存"""
+        try:
+            import cv2
+            
+            if not frames:
+                return
+            
+            # 動画の設定
+            height, width, channels = frames[0].shape
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            fps = 50  # フレームレート（50fps）
+            
+            # フレームレート調整: 30fps → 50fps
+            # 元のフレーム数を50fpsに合わせて調整
+            original_fps = 30
+            target_fps = 50
+            frame_ratio = target_fps / original_fps  # 50/30 = 1.67
+            
+            # 動画ライターの作成
+            out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+            
+            # フレームを書き込み（フレームレート調整）
+            for i, frame in enumerate(frames):
+                # BGR形式に変換（OpenCVはBGR形式）
+                frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                
+                # フレームレート調整: 各フレームを複数回書き込み
+                repeat_count = int(frame_ratio)
+                for _ in range(repeat_count):
+                    out.write(frame_bgr)
+                
+                # 残りのフレームを補間
+                if i < len(frames) - 1:
+                    next_frame = cv2.cvtColor(frames[i + 1], cv2.COLOR_RGB2BGR)
+                    # フレーム間の補間
+                    if frame_ratio - repeat_count > 0:
+                        out.write(frame_bgr)  # 補間フレーム
+            
+            # リソースの解放
+            out.release()
+            
+        except ImportError:
+            self.video_logger.warning("OpenCVがインストールされていません。動画保存をスキップします。")
+        except Exception as e:
+            self.video_logger.error("動画保存中にエラーが発生しました", exception=e)
+    
+    def on_step(self):
+        """各ステップでの処理"""
+        # 評価中の場合、フレームを保存
+        if hasattr(self, 'frames') and self.frames is not None:
+            try:
+                # フレームを取得
+                frame = self.eval_env.render(mode="rgb_array")
+                if frame is not None:
+                    self.frames.append(frame)
+            except Exception as e:
+                self.video_logger.debug("フレーム取得エラー", exception=e)
+        
+        return super().on_step()
+
+
 class BittleTrainer:
     """Bittle学習管理クラス"""
     
@@ -208,11 +365,11 @@ class BittleTrainer:
         
         try:
             def make_eval_env():
-                return BittleEnvironment(self.config, render_mode=None)
+                return BittleEnvironment(self.config, render_mode="human")
             
             eval_env = DummyVecEnv([make_eval_env])
             # 学習環境と同じ正規化を適用
-            eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=True, training=False)
+            eval_env = VecNormalize(eval_env, norm_obs=False, norm_reward=True, training=False)
             
             self.logger.info("評価環境作成完了")
             return eval_env
@@ -274,15 +431,15 @@ class BittleTrainer:
         callbacks = []
         
         try:
-            # 評価コールバック
-            eval_callback = EvalCallback(
+            # 動画保存機能付き評価コールバック
+            eval_callback = VideoEvalCallback(
                 eval_env,
                 best_model_save_path=os.path.join(self.config['save']['model_path'], 'best_model'),
                 log_path=self.config['logging']['log_dir'],
                 eval_freq=self.config['evaluation']['frequency'],
                 n_eval_episodes=self.config['evaluation']['n_eval_episodes'],
                 deterministic=self.config['evaluation']['deterministic'],
-                render=False,
+                render=True,  # 評価時にレンダリング表示（学習進捗の視覚的確認）
                 verbose=1
             )
             callbacks.append(eval_callback)
