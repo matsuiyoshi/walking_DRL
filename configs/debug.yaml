@@ -1,0 +1,63 @@
+# デバッグ用設定（単一環境、レンダリング有効）
+environment:
+  name: "BittleWalking-v0"
+  max_episode_steps: 1000  # 長いエピソード
+  control_frequency: 50
+  physics_frequency: 240
+  gravity: -9.81
+  render_mode: "human"  # レンダリング有効
+  
+robot:
+  urdf_path: "bittle.urdf"
+  initial_position: [0.0, 0.0, 0.15]
+  initial_orientation: [0.0, 0.0, 0.0]
+  joint_limits: [-1.22173, 1.22173]  # -70度 ～ +70度（安全な制限）
+  max_torque: 2.0
+  
+rewards:
+  forward_velocity_weight: 15.0  # 前進速度の重み増加
+  survival_reward: 2.0           # 生存報酬増加
+  fall_penalty: -200.0           # 転倒ペナルティ強化
+  energy_efficiency_weight: -0.005  # エネルギー効率
+  
+  # 前方行進促進のための新しい報酬要素
+  target_height: 0.1                    # 目標高さ（10cm）
+  height_stability_weight: 5.0          # 高さ安定性の重み
+  vertical_velocity_penalty: 2.0        # 垂直速度ペナルティ
+  distance_weight: 1.0                   # 前進距離の重み
+  
+termination:
+  min_height: 0.01   # 1cm以下に緩和（元: 2.5cm）
+  max_roll: 80.0     # 緩い設定
+  max_pitch: 80.0    # 緩い設定
+
+training:
+  algorithm: "PPO"
+  total_timesteps: 100000  # デバッグ用に10万ステップに短縮
+  n_envs: 1  # デバッグ用に単一環境
+  n_steps: 512  # ステップ数も短縮
+  learning_rate: 0.0003
+  batch_size: 64
+  n_epochs: 5
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  
+save:
+  frequency: 10000         # 1万ステップごとに保存（デバッグ用）
+  model_path: "./models"
+  checkpoint_path: "./models/checkpoints"
+  vec_normalize_path: "./models/vec_normalize.pkl"
+  
+evaluation:
+  frequency: 5000          # 5千ステップごとに評価（デバッグ用・頻繁に）
+  n_eval_episodes: 2       # 評価エピソード数をさらに削減
+  deterministic: true
+  
+logging:
+  log_dir: "./logs"
+  tensorboard: true
+  verbose: 1
+  debug_level: "DEBUG"  # デバッグ用に詳細ログ

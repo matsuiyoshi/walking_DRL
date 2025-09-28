@@ -1,0 +1,63 @@
+# 本格的な学習用設定
+environment:
+  name: "BittleWalking-v0"
+  max_episode_steps: 2000  # 長いエピソード
+  control_frequency: 50
+  physics_frequency: 240
+  gravity: -9.81
+  render_mode: None  # デバッグ学習と同じ設定を追加
+  
+robot:
+  urdf_path: "bittle.urdf"
+  initial_position: [0.0, 0.0, 0.15]
+  initial_orientation: [0.0, 0.0, 0.0]
+  joint_limits: [-1.22173, 1.22173]  # -70度 ～ +70度（安全な制限）
+  max_torque: 2.0
+  
+rewards:
+  forward_velocity_weight: 8.0  # 前進速度の重み増加
+  survival_reward: 1.0           # 生存報酬増加
+  fall_penalty: -100.0           # 転倒ペナルティ強化
+  energy_efficiency_weight: -0.005  # エネルギー効率
+  
+  # 前方行進促進のための新しい報酬要素
+  target_height: 0.12                    # 目標高さ（10cm）
+  height_stability_weight: 12.0          # 高さ安定性の重み
+  vertical_velocity_penalty: 5.0        # 垂直速度ペナルティ
+  distance_weight: 30.0                   # 前進距離の重み
+  
+termination:
+  max_roll: 80.0     # 緩い設定
+  max_pitch: 80.0    # 緩い設定
+
+training:
+  algorithm: "PPO"
+  total_timesteps: 100000000   # 1億ステップ（現実的な学習時間）
+  n_envs: 12  # 並列環境問題の調査のため単一環境に変更
+  n_steps: 1024            # ステップ数増加
+  learning_rate: 0.0001
+  batch_size: 128             # バッチサイズ増加
+  n_epochs: 8                 # エポック数増加
+  gamma: 0.995                # 長期報酬重視
+  gae_lambda: 0.98            # GAEラムダ向上
+  clip_range: 0.15            # クリップ範囲調整
+  ent_coef: 0.005             # エントロピー係数削減
+  vf_coef: 0.3                # 価値関数係数調整
+  max_grad_norm: 0.5          # 勾配クリッピング追加
+  
+save:
+  frequency: 500000           # 50万ステップごとに保存（20倍頻繁）
+  model_path: "./models"
+  checkpoint_path: "./models/checkpoints"
+  vec_normalize_path: "./models/vec_normalize.pkl"
+  
+evaluation:
+  frequency: 100000           # 100万ステップごとに評価（100倍頻繁）
+  n_eval_episodes: 3          # 評価エピソード数を削減（動画保存のため）
+  deterministic: true
+  
+logging:
+  log_dir: "./logs"
+  tensorboard: true
+  verbose: 1
+  debug_level: "DEBUG"  # ステップデバッグのためDEBUGレベルに変更
