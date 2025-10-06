@@ -649,61 +649,53 @@ class BittleEnvironment(gym.Env):
         })
     
     def _calculate_reward_detailed(self, action: np.ndarray) -> Tuple[float, Dict]:
-        """詳細な報酬計算"""
+        """VecNormalize対応の報酬計算（正規化なし）"""
         reward_breakdown = {}
         
-        # 1. 前進速度報酬
-        velocity, _ = p.getBaseVelocity(self.robot_id)
+        # 物理状態の取得
+        velocity, angular_velocity = p.getBaseVelocity(self.robot_id)
+        position, orientation = p.getBasePositionAndOrientation(self.robot_id)
+        euler_angles = p.getEulerFromQuaternion(orientation)
+        
+        # 1. 前進速度報酬（正規化なし、生の値を使用）
         forward_velocity = velocity[0]
         velocity_reward = forward_velocity * self.reward_weights['forward_velocity']
         reward_breakdown['forward_velocity'] = velocity_reward
         
-        # 2. 生存報酬
+        # 2. 生存報酬（固定値）
         survival_reward = self.reward_weights['survival']
         reward_breakdown['survival'] = survival_reward
         
-        # 3. 転倒ペナルティ（無効化）
-        # 転倒判定を無効化したため、ペナルティも無効化
-        fall_penalty = 0.0
+        # 3. 転倒ペナルティ（有効化）
+        if self._is_fallen():
+            fall_penalty = self.reward_weights['fall_penalty']
+        else:
+            fall_penalty = 0.0
         reward_breakdown['fall_penalty'] = fall_penalty
         
-        # 4. エネルギー効率ペナルティ（角度変化量ベース）
+        # 4. エネルギー効率ペナルティ（生の角度変化量）
         if hasattr(self, 'last_action') and self.last_action is not None:
-            # 角度変化量の計算
             action_change = np.abs(action - self.last_action)
             total_change = np.sum(action_change)
             energy_penalty = total_change * abs(self.reward_weights['energy_efficiency'])
         else:
-            # 初回は変化量を0とする
             energy_penalty = 0.0
         reward_breakdown['energy_efficiency'] = -energy_penalty
         
-        # 5. 高さ安定性報酬（ジャンプ抑制・安定歩行促進）
-        position, _ = p.getBasePositionAndOrientation(self.robot_id)
-        height = position[2]
-        target_height = self.reward_weights.get('target_height', 0.1)
-        height_stability = -abs(height - target_height) * self.reward_weights.get('height_stability_weight', 5.0)
-        reward_breakdown['height_stability'] = height_stability
+        # 5. 姿勢安定性報酬（生の角度誤差）
+        roll, pitch, yaw = euler_angles
+        roll_error = abs(roll)
+        pitch_error = abs(pitch)
+        orientation_error = (roll_error + pitch_error) / 2
         
-        # 6. 垂直速度ペナルティ（ジャンプ・落下抑制）
-        vertical_velocity = velocity[2]  # Z方向の速度
-        vertical_penalty = -abs(vertical_velocity) * self.reward_weights.get('vertical_velocity_penalty', 2.0)
-        reward_breakdown['vertical_velocity_penalty'] = vertical_penalty
+        orientation_penalty = -orientation_error * self.reward_weights.get('orientation_stability_weight', 0.5)
+        reward_breakdown['orientation_stability'] = orientation_penalty
         
-        # 7. 前進距離報酬（真の前進を促進）
-        if not hasattr(self, 'initial_position'):
-            self.initial_position = position
-        distance_traveled = position[0] - self.initial_position[0]  # X方向の移動距離
-        distance_reward = distance_traveled * self.reward_weights.get('distance_weight', 1.0)
-        reward_breakdown['distance_traveled'] = distance_reward
-        
-        # 合計報酬
+        # 合計報酬の計算
         total_reward = sum(reward_breakdown.values())
         reward_breakdown['total'] = total_reward
         
-        # デバッグ用の詳細ログ出力
-        self._log_reward_breakdown(reward_breakdown, height, vertical_velocity, distance_traveled)
-        
+        # デバッグ情報の更新
         self.debug_info['last_reward_breakdown'] = reward_breakdown
         
         return total_reward, reward_breakdown
