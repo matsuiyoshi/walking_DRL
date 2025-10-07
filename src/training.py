@@ -526,7 +526,7 @@ class BittleTrainer:
                 eval_freq=self.config['evaluation']['frequency'],
                 n_eval_episodes=self.config['evaluation']['n_eval_episodes'],
                 deterministic=self.config['evaluation']['deterministic'],
-                render=True,  # 評価時にレンダリング表示（学習進捗の視覚的確認）
+                render=False,  # 評価時のレンダリング無効化（エラー回避）
                 verbose=1
             )
             callbacks.append(eval_callback)

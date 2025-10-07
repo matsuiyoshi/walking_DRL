@@ -25,7 +25,7 @@ from .utils.exceptions import ModelLoadError
 class BittleEvaluator:
     """Bittle評価管理クラス"""
     
-    def __init__(self, model_path: str, config_path: str = "configs/default.yaml"):
+    def __init__(self, model_path: str, config_path: str = "configs/production.yaml"):
         """
         評価器の初期化
         
@@ -569,7 +569,7 @@ class BittleEvaluator:
             raise
 
 
-def evaluate_model(model_path: str, config_path: str = "configs/default.yaml", 
+def evaluate_model(model_path: str, config_path: str = "configs/production.yaml", 
                   num_episodes: int = 10, render: bool = False, save_video: bool = True) -> Dict:
     """
     モデル評価の便利関数
@@ -591,7 +591,7 @@ def evaluate_model(model_path: str, config_path: str = "configs/default.yaml",
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bittle四足歩行ロボット評価')
     parser.add_argument('model_path', type=str, help='学習済みモデルのパス')
-    parser.add_argument('--config', type=str, default='configs/default.yaml',
+    parser.add_argument('--config', type=str, default='configs/production.yaml',
                         help='設定ファイルのパス')
     parser.add_argument('--episodes', type=int, default=10,
                         help='評価エピソード数')

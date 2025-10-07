@@ -34,11 +34,11 @@ termination:
 training:
   algorithm: "PPO"
   total_timesteps: 10000000  # 1000万ステップ（学習時間制限なし）
-  n_envs: 8                  # 並列環境数を増加（RTX 3050対応）
-  n_steps: 1024             # ステップ数を増加
-  learning_rate: 0.0003     # 学習率（安定学習）
-  batch_size: 32            # バッチサイズを削減（RTX 3050のVRAM制限対応）
-  n_epochs: 8               # エポック数を増加
+  n_envs: 12                  # 並列環境数を増加（RTX 3050対応）
+  n_steps: 512              # ステップ数を最適化（メモリ効率化）
+  learning_rate: 0.0001     # 学習率を安定化（並列環境数12対応）
+  batch_size: 64            # バッチサイズを最適化（n_envs×5.3）
+  n_epochs: 4               # エポック数を調整（過学習防止）
   gamma: 0.995              # 割引率を上げる（長期報酬重視）
   gae_lambda: 0.98          # GAEラムダを上げる
   clip_range: 0.2           # クリップ範囲
