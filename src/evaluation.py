@@ -170,8 +170,7 @@ class BittleEvaluator:
             action, _ = self.model.predict(obs, deterministic=deterministic)
             
             # アクションの実行
-            obs, reward, terminated, truncated, info = self.env.step(action)
-            done = terminated or truncated
+            obs, reward, done, info = self.env.step(action)
             
             # 統計の収集
             episode_reward += reward[0] if isinstance(reward, np.ndarray) else reward
