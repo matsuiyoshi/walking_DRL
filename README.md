@@ -183,6 +183,25 @@ python -m src.training --config configs/custom.yaml
 python -m src.training --debug
 ```
 
+**🔄 Best Modelの自動バックアップ機能**
+
+新しい学習を開始すると、前回の`best_model.zip`が自動的に`models/best_model_archive/`にバックアップされます。報酬設定を変更して再学習しても、過去の優秀なモデルは失われません。
+
+```bash
+# 学習実行（自動でバックアップ）
+python -m src.training configs/production.yaml
+
+# バックアップされたモデルの確認
+ls -lh models/best_model_archive/
+# → best_model_20251006_190411.zip
+# → best_model_20251007_153020.zip
+
+# 過去のモデルを評価
+python -m src.evaluation models/best_model_archive/best_model_20251006_190411.zip
+```
+
+詳細は[BEST_MODEL_BACKUP_GUIDE.md](BEST_MODEL_BACKUP_GUIDE.md)を参照してください。
+
 ### 評価の実行
 
 ```bash

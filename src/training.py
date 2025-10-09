@@ -6,6 +6,7 @@ Stable-Baselines3を使用した深層強化学習の実装
 import os
 import time
 import glob
+import shutil
 from typing import Dict, List, Optional, Any
 import numpy as np
 import gymnasium as gym
@@ -375,6 +376,9 @@ class BittleTrainer:
             # 設定の読み込み
             self.config = self._load_config(config_path)
             
+            # 既存のbest_modelをバックアップ（新しい学習セッション開始前）
+            self._backup_previous_best_model()
+            
             # ディレクトリの作成
             self._create_directories()
             
@@ -406,6 +410,77 @@ class BittleTrainer:
         
         self.logger.info("設定ファイル読み込み", {"config_path": config_path})
         return load_and_validate_config(config_path)
+    
+    def _backup_previous_best_model(self):
+        """
+        既存のbest_modelをバックアップ
+        
+        新しい学習セッションを開始する前に、前回の学習で作成された
+        best_model.zipをアーカイブディレクトリに保存します。
+        これにより、報酬設定を変更して再学習する際も、過去の優秀な
+        モデルを失わずに保存できます。
+        """
+        try:
+            # best_modelのパスを構築
+            best_model_dir = os.path.join(self.config['save']['model_path'], 'best_model')
+            best_model_file = os.path.join(best_model_dir, 'best_model.zip')
+            
+            # ファイルが存在しない場合はバックアップ不要（初回学習）
+            if not os.path.exists(best_model_file):
+                self.logger.info("バックアップ対象のbest_modelが存在しません（初回学習）")
+                return
+            
+            # バックアップディレクトリの作成
+            backup_dir = os.path.join(self.config['save']['model_path'], 'best_model_archive')
+            os.makedirs(backup_dir, exist_ok=True)
+            
+            # ファイルの最終更新日時を取得してタイムスタンプとする
+            mtime = os.path.getmtime(best_model_file)
+            timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime(mtime))
+            
+            # バックアップファイル名を生成
+            backup_file = os.path.join(backup_dir, f'best_model_{timestamp}.zip')
+            
+            # 同名のバックアップが既に存在する場合の対策
+            counter = 1
+            original_backup_file = backup_file
+            while os.path.exists(backup_file):
+                # 連番を追加して一意なファイル名にする
+                backup_file = original_backup_file.replace('.zip', f'_{counter}.zip')
+                counter += 1
+                if counter > 100:  # 無限ループ防止
+                    self.logger.warning("バックアップファイル名の生成に失敗しました")
+                    return
+            
+            # ファイルをコピー（メタデータも保持）
+            shutil.copy2(best_model_file, backup_file)
+            
+            # ファイルサイズを確認（コピーが正常に完了したか検証）
+            original_size = os.path.getsize(best_model_file)
+            backup_size = os.path.getsize(backup_file)
+            
+            if original_size == backup_size:
+                self.logger.info("前回のbest_modelをバックアップしました", {
+                    "original_file": best_model_file,
+                    "backup_file": backup_file,
+                    "file_size": f"{backup_size / 1024:.1f} KB",
+                    "timestamp": timestamp
+                })
+            else:
+                self.logger.error("バックアップファイルのサイズが一致しません", {
+                    "original_size": original_size,
+                    "backup_size": backup_size
+                })
+                # サイズが一致しない場合は不完全なバックアップを削除
+                os.remove(backup_file)
+                
+        except Exception as e:
+            # バックアップに失敗しても学習は続行可能
+            # ただし警告ログを出力してユーザーに通知
+            self.logger.warning("best_modelのバックアップ中にエラーが発生しました", {
+                "error": str(e),
+                "note": "学習は続行されますが、前回のbest_modelが上書きされる可能性があります"
+            })
     
     def _create_directories(self):
         """必要なディレクトリの作成"""
