@@ -310,10 +310,62 @@ class BittleEnvironment(gym.Env):
             'target_height': self.reward_config.get('target_height', 0.1),
             'height_stability_weight': self.reward_config.get('height_stability_weight', 5.0),
             'vertical_velocity_penalty': self.reward_config.get('vertical_velocity_penalty', 2.0),
-            'distance_weight': self.reward_config.get('distance_weight', 1.0)
+            'distance_weight': self.reward_config.get('distance_weight', 1.0),
+            
+            # 足先接地報酬（新規追加）
+            'foot_contact_reward': self.reward_config.get('foot_contact_reward', 0.0),
+            'proper_gait_reward': self.reward_config.get('proper_gait_reward', 0.0),
+            'body_clearance_reward': self.reward_config.get('body_clearance_reward', 0.0),
+            'height_reward_weight': self.reward_config.get('height_reward_weight', 0.0)
         }
         
+        # 足先リンクの特定
+        self._identify_foot_links()
+        
         self.logger.info("報酬関数設定完了", {"reward_weights": self.reward_weights})
+    
+    def _identify_foot_links(self):
+        """
+        足先リンク（エンドエフェクタ）を特定
+        
+        Bittleの構造:
+        - 各脚に2つの関節（shoulder, knee）
+        - kneeリンクが足先（エンドエフェクタ）
+        """
+        self.foot_links = []
+        self.body_links = []  # 胴体と中間関節
+        
+        # 足先リンク名のパターン（kneeが足先）
+        foot_link_patterns = ['knee']
+        
+        # 胴体リンク名のパターン
+        body_link_patterns = ['base', 'battery', 'cover', 'mainboard', 'imu', 'shoulder']
+        
+        for i in range(p.getNumJoints(self.robot_id)):
+            joint_info = p.getJointInfo(self.robot_id, i)
+            link_name = joint_info[12].decode('utf-8').lower()  # リンク名
+            
+            # 足先リンクの判定
+            if any(pattern in link_name for pattern in foot_link_patterns):
+                self.foot_links.append(i)
+                self.logger.debug(f"足先リンク検出: {link_name} (link_index: {i})")
+            
+            # 胴体・中間関節リンクの判定
+            elif any(pattern in link_name for pattern in body_link_patterns):
+                self.body_links.append(i)
+                self.logger.debug(f"胴体リンク検出: {link_name} (link_index: {i})")
+        
+        # base_link（リンクインデックス-1）も胴体として追加
+        self.body_links.append(-1)
+        
+        self.logger.info(f"リンク検出完了: 足先={len(self.foot_links)}個, 胴体={len(self.body_links)}個", {
+            "foot_links": self.foot_links,
+            "body_links_count": len(self.body_links)
+        })
+        
+        # 検証: 4本の足が検出されているか
+        if len(self.foot_links) != 4:
+            self.logger.warning(f"期待される足先リンク数は4個ですが、{len(self.foot_links)}個検出されました")
     
     def _initialize_debug_info(self):
         """デバッグ情報の初期化"""
@@ -648,6 +700,83 @@ class BittleEnvironment(gym.Env):
             'last_observation': observation.tolist()
         })
     
+    def _calculate_foot_contact_reward(self) -> Tuple[float, Dict]:
+        """
+        足先接地報酬の計算
+        
+        Returns:
+            Tuple[float, Dict]: (合計報酬, 報酬詳細)
+        """
+        foot_contact_count = 0
+        body_contact = False
+        foot_contact_details = {}
+        reward_breakdown = {}
+        
+        # 全ての接触点を取得
+        contact_points = p.getContactPoints(self.robot_id)
+        
+        for contact in contact_points:
+            link_index = contact[3]  # ロボット側のリンクインデックス
+            
+            # 足先との接触
+            if link_index in self.foot_links:
+                foot_contact_count += 1
+                foot_contact_details[f'foot_{link_index}'] = True
+            
+            # 胴体や中間関節との接触（ペナルティ対象）
+            elif link_index in self.body_links:
+                body_contact = True
+        
+        # 1. 足先接地報酬（2-4本の足が接地していると高報酬）
+        if self.reward_weights['foot_contact_reward'] != 0:
+            if 1 <= foot_contact_count <= 4:
+                foot_reward = self.reward_weights['foot_contact_reward'] * (foot_contact_count / 4.0)
+            else:
+                foot_reward = 0.0
+            reward_breakdown['foot_contact'] = foot_reward
+        
+        # 2. 適切な歩容報酬（2-3本で歩行が理想的）
+        if self.reward_weights['proper_gait_reward'] != 0:
+            if 2 <= foot_contact_count <= 3:
+                gait_reward = self.reward_weights['proper_gait_reward']
+            else:
+                gait_reward = 0.0
+            reward_breakdown['proper_gait'] = gait_reward
+        
+        # 3. 胴体クリアランス報酬（胴体が地面に接触していないこと）
+        if self.reward_weights['body_clearance_reward'] != 0:
+            if not body_contact:
+                clearance_reward = self.reward_weights['body_clearance_reward']
+            else:
+                clearance_reward = -self.reward_weights['body_clearance_reward']  # ペナルティ
+            reward_breakdown['body_clearance'] = clearance_reward
+        
+        # 4. 胴体高さ報酬（足先で立つことを促進）
+        if self.reward_weights['height_reward_weight'] != 0:
+            position, _ = p.getBasePositionAndOrientation(self.robot_id)
+            current_height = position[2]
+            target_height = self.reward_weights.get('target_height', 0.12)
+            
+            # 目標高さに近いほど高報酬
+            height_error = abs(current_height - target_height)
+            if height_error < 0.03:  # 3cm以内
+                height_reward = self.reward_weights['height_reward_weight'] * (1.0 - height_error / 0.03)
+            else:
+                # 低すぎる場合はペナルティ
+                height_reward = -self.reward_weights['height_reward_weight'] * min(height_error, 0.1)
+            reward_breakdown['height_maintenance'] = height_reward
+        
+        # デバッグ情報を保存
+        if hasattr(self, 'debug_info'):
+            self.debug_info['last_foot_contact'] = {
+                'foot_contact_count': foot_contact_count,
+                'body_contact': body_contact,
+                'foot_details': foot_contact_details
+            }
+        
+        total_reward = sum(reward_breakdown.values())
+        return total_reward, reward_breakdown
+    
     def _calculate_reward_detailed(self, action: np.ndarray) -> Tuple[float, Dict]:
         """VecNormalize対応の報酬計算（正規化なし）"""
         reward_breakdown = {}
@@ -690,6 +819,11 @@ class BittleEnvironment(gym.Env):
         
         orientation_penalty = -orientation_error * self.reward_weights.get('orientation_stability_weight', 0.5)
         reward_breakdown['orientation_stability'] = orientation_penalty
+        
+        # 6. 足先接地報酬（新規追加）
+        if hasattr(self, 'foot_links'):
+            foot_reward, foot_breakdown = self._calculate_foot_contact_reward()
+            reward_breakdown.update(foot_breakdown)
         
         # 合計報酬の計算
         total_reward = sum(reward_breakdown.values())

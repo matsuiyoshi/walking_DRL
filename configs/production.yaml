@@ -22,8 +22,14 @@ rewards:
   energy_efficiency_weight: -0.01    # 生の角度変化量（rad）に適用
   orientation_stability_weight: 0.5  # 生の角度誤差（rad）に適用
   
+  # 足先接地報酬（新規追加）
+  foot_contact_reward: 3.0           # 足先が接地している報酬
+  proper_gait_reward: 2.0            # 適切な歩容報酬（2-3本足接地）
+  body_clearance_reward: 5.0         # 胴体・中間関節が地面から離れている報酬
+  target_height: 0.12                # 目標胴体高さ（12cm）
+  height_reward_weight: 3.0          # 高さ維持報酬の重み
+  
   # 削除された報酬要素（VecNormalizeと競合するため）
-  # target_height: 0.12
   # height_stability_weight: 12.0
   # vertical_velocity_penalty: 5.0
   
