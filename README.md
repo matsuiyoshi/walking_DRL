@@ -10,6 +10,7 @@ Bittle四足歩行ロボットをPyBulletシミュレーション環境で深層
 - **Docker対応**: 環境構築の簡素化とポータビリティ
 - **段階的実装**: 環境→学習→評価の順で確実に構築
 - **厳密な仕様**: 実装可能な詳細仕様に基づく開発
+- **運動学的計算**: 関節角度から足先位置を正確に計算（NEW!）
 
 ## 📁 プロジェクト構造
 
@@ -75,7 +76,7 @@ docker build -t bittle-walking .
 docker run --gpus all -v $(pwd):/app bittle-walking train
 
 # 評価の実行
-docker run --gpus all -v $(pwd):/app bittle-walking evaluate models/final_model.zip
+docker run --gpus all -v $(pwd):/app bittle-walking evaluate models/best_model/best_model.zip
 
 # インタラクティブ評価（GUI）
 docker run --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd):/app bittle-walking interactive models/final_model.zip
@@ -214,6 +215,29 @@ python -m src.evaluation models/best_model.zip --render --episodes 20
 # インタラクティブ評価
 python -m src.evaluation models/best_model.zip --interactive
 ```
+
+### 運動学的足先接地報酬（NEW!）
+
+関節角度から三角関数を使って足先位置を計算し、地面との距離を把握する運動学的計算を実装しました。
+
+```bash
+# 運動学的計算を使用した学習
+python -m src.training --config configs/production.yaml
+
+# 設定ファイルで切り替え可能
+# configs/production.yaml: use_kinematic_contact: true  (運動学的計算)
+# configs/debug.yaml: use_kinematic_contact: false (物理エンジンの接触検知)
+```
+
+**主な機能:**
+- 関節角度から足先位置を正確に計算
+- 左右対称を考慮（モーターの回転方向）
+- 物理シミュレーションに依存しない接地判定
+- 既存の実装との完全な互換性
+
+詳細は以下のドキュメントを参照：
+- [KINEMATIC_FOOT_CONTACT_IMPLEMENTATION.md](KINEMATIC_FOOT_CONTACT_IMPLEMENTATION.md): 実装の詳細ガイド
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md): 実装完了報告
 
 ## 🐛 デバッグ機能
 

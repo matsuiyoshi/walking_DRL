@@ -20,6 +20,9 @@ rewards:
   fall_penalty: -200.0           # 転倒ペナルティ強化
   energy_efficiency_weight: -0.005  # エネルギー効率
   
+  # 足先接地報酬計算方法の選択
+  use_kinematic_contact: false   # デバッグ: 物理エンジンの接触検知を使用
+  
   # 前方行進促進のための新しい報酬要素
   target_height: 0.1                    # 目標高さ（10cm）
   height_stability_weight: 5.0          # 高さ安定性の重み

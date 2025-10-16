@@ -22,6 +22,9 @@ rewards:
   energy_efficiency_weight: -0.01    # 生の角度変化量（rad）に適用
   orientation_stability_weight: 0.5  # 生の角度誤差（rad）に適用
   
+  # 足先接地報酬計算方法の選択
+  use_kinematic_contact: true        # true: 運動学的計算, false: 物理エンジンの接触検知
+  
   # 足先接地報酬（新規追加）
   foot_contact_reward: 3.0           # 足先が接地している報酬
   proper_gait_reward: 2.0            # 適切な歩容報酬（2-3本足接地）

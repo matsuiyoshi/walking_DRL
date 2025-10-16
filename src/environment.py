@@ -366,6 +366,54 @@ class BittleEnvironment(gym.Env):
         # 検証: 4本の足が検出されているか
         if len(self.foot_links) != 4:
             self.logger.warning(f"期待される足先リンク数は4個ですが、{len(self.foot_links)}個検出されました")
+        
+        # 運動学的パラメータの初期化
+        self._initialize_kinematic_parameters()
+    
+    def _initialize_kinematic_parameters(self):
+        """
+        運動学的計算のためのパラメータを初期化
+        Bittleの脚の構造パラメータをURDFから取得
+        """
+        # URDFから取得したリンク長さ（メートル単位）
+        self.shoulder_length = 0.0  # 肩関節の長さ（肩の回転軸）
+        self.upper_leg_length = 0.49172  # 肩から膝までの距離
+        self.lower_leg_length = 0.0  # 膝から足先までの距離（kneeが最外端）
+        
+        # 各脚の肩関節のベース座標系での位置（URDFから取得）
+        # [x, y, z] の順序
+        self.leg_base_positions = {
+            'left_front': [-0.44596, 0.52264, -0.02102],
+            'right_front': [0.45149, 0.52264, -0.02102],
+            'left_back': [-0.44596, -0.51923, -0.02102],
+            'right_back': [0.45149, -0.51923, -0.02102]
+        }
+        
+        # 関節インデックスと脚の対応付け
+        # Bittleの関節順序に基づく
+        self.leg_joint_mapping = {
+            0: 'left_front',   # left-front-shoulder
+            1: 'left_front',   # left-front-knee
+            2: 'right_front',  # right-front-shoulder
+            3: 'right_front',  # right-front-knee
+            4: 'left_back',    # left-back-shoulder
+            5: 'left_back',    # left-back-knee
+            6: 'right_back',   # right-back-shoulder
+            7: 'right_back'    # right-back-knee
+        }
+        
+        # 左右対称を考慮するための符号（右側は時計回り反転）
+        self.leg_symmetry_sign = {
+            'left_front': 1.0,
+            'right_front': -1.0,
+            'left_back': 1.0,
+            'right_back': -1.0
+        }
+        
+        self.logger.info("運動学的パラメータ初期化完了", {
+            "upper_leg_length": self.upper_leg_length,
+            "leg_base_positions": self.leg_base_positions
+        })
     
     def _initialize_debug_info(self):
         """デバッグ情報の初期化"""
@@ -777,6 +825,187 @@ class BittleEnvironment(gym.Env):
         total_reward = sum(reward_breakdown.values())
         return total_reward, reward_breakdown
     
+    def _calculate_foot_positions_from_kinematics(self) -> Dict[str, Tuple[float, float, float]]:
+        """
+        関節角度から三角関数を使って足先位置を計算（運動学的計算）
+        
+        Returns:
+            Dict[str, Tuple[float, float, float]]: 各脚の足先位置（ワールド座標）
+                キー: 'left_front', 'right_front', 'left_back', 'right_back'
+                値: (x, y, z) タプル
+        """
+        foot_positions = {}
+        
+        # ロボットのベース位置と姿勢を取得
+        base_position, base_orientation = p.getBasePositionAndOrientation(self.robot_id)
+        
+        # 関節角度を取得
+        joint_angles = []
+        for joint_idx in self.joint_indices:
+            joint_state = p.getJointState(self.robot_id, joint_idx)
+            joint_angles.append(joint_state[0])
+        
+        # 各脚の足先位置を計算
+        legs = ['left_front', 'right_front', 'left_back', 'right_back']
+        
+        for leg_idx, leg_name in enumerate(legs):
+            # 肩関節と膝関節の角度を取得
+            shoulder_joint_idx = leg_idx * 2
+            knee_joint_idx = leg_idx * 2 + 1
+            
+            shoulder_angle = joint_angles[shoulder_joint_idx]
+            knee_angle = joint_angles[knee_joint_idx]
+            
+            # 左右対称の考慮（モーターの回転方向）
+            symmetry_sign = self.leg_symmetry_sign[leg_name]
+            shoulder_angle_adj = shoulder_angle * symmetry_sign
+            knee_angle_adj = knee_angle * symmetry_sign
+            
+            # 肩関節のベース座標系での位置
+            leg_base_pos = self.leg_base_positions[leg_name]
+            
+            # 足先位置の計算（2Dの場合を簡略化）
+            # 肩関節から膝までの距離を使用
+            # 膝が最外端なので、膝の位置を足先位置とする
+            
+            # Y-Z平面での計算（脚の伸縮方向）
+            # 肩関節の回転により、脚がY-Z平面で動く
+            knee_y_offset = self.upper_leg_length * np.cos(shoulder_angle_adj)
+            knee_z_offset = self.upper_leg_length * np.sin(shoulder_angle_adj)
+            
+            # 膝関節の回転による追加のオフセット
+            # 膝関節が曲がることで、足先（膝の先端）の位置が変わる
+            # ここでは簡略化して、膝の位置を足先位置とする
+            
+            # ローカル座標系での足先位置
+            foot_local_x = leg_base_pos[0]
+            foot_local_y = leg_base_pos[1] + knee_y_offset
+            foot_local_z = leg_base_pos[2] + knee_z_offset
+            
+            # ローカル座標からワールド座標への変換
+            foot_world_pos = self._transform_local_to_world(
+                [foot_local_x, foot_local_y, foot_local_z],
+                base_position,
+                base_orientation
+            )
+            
+            foot_positions[leg_name] = foot_world_pos
+        
+        return foot_positions
+    
+    def _transform_local_to_world(self, local_pos: List[float],
+                                  base_pos: Tuple[float, float, float],
+                                  base_quat: Tuple[float, float, float, float]) -> Tuple[float, float, float]:
+        """
+        ローカル座標からワールド座標への変換
+        
+        Args:
+            local_pos: ローカル座標系での位置 [x, y, z]
+            base_pos: ベースのワールド座標系での位置
+            base_quat: ベースの姿勢（クォータニオン）
+        
+        Returns:
+            ワールド座標系での位置 (x, y, z)
+        """
+        # クォータニオンを回転行列に変換
+        rotation_matrix = p.getMatrixFromQuaternion(base_quat)
+        rotation_matrix = np.array(rotation_matrix).reshape(3, 3)
+        
+        # ローカル位置を回転
+        local_array = np.array(local_pos)
+        rotated_pos = rotation_matrix @ local_array
+        
+        # ベース位置を加算
+        world_pos = rotated_pos + np.array(base_pos)
+        
+        return tuple(world_pos)
+    
+    def _calculate_foot_ground_distances(self) -> Dict[str, float]:
+        """
+        足先と地面との距離を計算（運動学的計算）
+        
+        Returns:
+            Dict[str, float]: 各脚の地面からの距離
+                キー: 'left_front', 'right_front', 'left_back', 'right_back'
+                値: 地面からの距離（メートル）
+        """
+        foot_positions = self._calculate_foot_positions_from_kinematics()
+        ground_distances = {}
+        
+        for leg_name, foot_pos in foot_positions.items():
+            # 地面は z=0 にあると仮定
+            ground_distance = foot_pos[2]
+            ground_distances[leg_name] = ground_distance
+        
+        return ground_distances
+    
+    def _calculate_foot_contact_reward_kinematic(self) -> Tuple[float, Dict]:
+        """
+        運動学的計算による足先接地報酬の計算
+        
+        Returns:
+            Tuple[float, Dict]: (合計報酬, 報酬詳細)
+        """
+        reward_breakdown = {}
+        
+        # 足先と地面との距離を運動学的に計算
+        ground_distances = self._calculate_foot_ground_distances()
+        
+        # 接地判定の閾値（5cm以内なら接地とみなす）
+        contact_threshold = 0.05
+        
+        # 接地している足をカウント
+        foot_contact_count = 0
+        foot_contact_details = {}
+        
+        for leg_name, distance in ground_distances.items():
+            if distance <= contact_threshold:
+                foot_contact_count += 1
+                foot_contact_details[leg_name] = True
+            else:
+                foot_contact_details[leg_name] = False
+        
+        # 1. 足先接地報酬（1-4本の足が接地していると報酬）
+        if self.reward_weights.get('foot_contact_reward', 0.0) != 0:
+            if 1 <= foot_contact_count <= 4:
+                foot_reward = self.reward_weights['foot_contact_reward'] * (foot_contact_count / 4.0)
+            else:
+                foot_reward = 0.0
+            reward_breakdown['foot_contact'] = foot_reward
+        
+        # 2. 適切な歩容報酬（2-3本で歩行が理想的）
+        if self.reward_weights.get('proper_gait_reward', 0.0) != 0:
+            if 2 <= foot_contact_count <= 3:
+                gait_reward = self.reward_weights['proper_gait_reward']
+            else:
+                gait_reward = 0.0
+            reward_breakdown['proper_gait'] = gait_reward
+        
+        # 3. 足先高さ報酬（接地していない足が適切な高さを維持）
+        if self.reward_weights.get('height_reward_weight', 0.0) != 0:
+            target_foot_height = 0.08  # 8cm（歩行時の足の持ち上げ高さ）
+            height_reward_sum = 0.0
+            
+            for leg_name, distance in ground_distances.items():
+                if distance > contact_threshold:  # 接地していない足
+                    height_error = abs(distance - target_foot_height)
+                    if height_error < 0.03:  # 3cm以内
+                        height_reward_sum += self.reward_weights['height_reward_weight'] * (1.0 - height_error / 0.03)
+            
+            reward_breakdown['height_maintenance'] = height_reward_sum
+        
+        # デバッグ情報の保存
+        if hasattr(self, 'debug_info'):
+            self.debug_info['kinematic_foot_contact'] = {
+                'ground_distances': ground_distances,
+                'foot_contact_count': foot_contact_count,
+                'foot_details': foot_contact_details,
+                'contact_threshold': contact_threshold
+            }
+        
+        total_reward = sum(reward_breakdown.values())
+        return total_reward, reward_breakdown
+    
     def _calculate_reward_detailed(self, action: np.ndarray) -> Tuple[float, Dict]:
         """VecNormalize対応の報酬計算（正規化なし）"""
         reward_breakdown = {}
@@ -821,8 +1050,16 @@ class BittleEnvironment(gym.Env):
         reward_breakdown['orientation_stability'] = orientation_penalty
         
         # 6. 足先接地報酬（新規追加）
+        # 運動学的計算を使用するか、物理エンジンの接触検知を使用するかを選択
+        use_kinematic_contact = self.reward_config.get('use_kinematic_contact', False)
+        
         if hasattr(self, 'foot_links'):
-            foot_reward, foot_breakdown = self._calculate_foot_contact_reward()
+            if use_kinematic_contact:
+                # 運動学的計算による足先接地報酬
+                foot_reward, foot_breakdown = self._calculate_foot_contact_reward_kinematic()
+            else:
+                # 物理エンジンの接触検知による足先接地報酬（既存）
+                foot_reward, foot_breakdown = self._calculate_foot_contact_reward()
             reward_breakdown.update(foot_breakdown)
         
         # 合計報酬の計算
