@@ -16,7 +16,7 @@ robot:
   
 rewards:
   # VecNormalizeが正規化するため、生の値で設定
-  forward_velocity_weight: 10.0      # 生の速度値（m/s）に適用
+  forward_velocity_weight: 7.0       # 生の速度値（m/s）に適用
   survival_reward: 1.0               # 固定値
   fall_penalty: -50.0                # 転倒時のペナルティ
   energy_efficiency_weight: -0.01    # 生の角度変化量（rad）に適用
@@ -25,12 +25,19 @@ rewards:
   # 足先接地報酬計算方法の選択
   use_kinematic_contact: true        # true: 運動学的計算, false: 物理エンジンの接触検知
   
-  # 足先接地報酬（新規追加）
-  foot_contact_reward: 3.0           # 足先が接地している報酬
-  proper_gait_reward: 2.0            # 適切な歩容報酬（2-3本足接地）
-  body_clearance_reward: 5.0         # 胴体・中間関節が地面から離れている報酬
+  # 足先接地報酬（大幅強化版：膝・肩這い防止）
+  foot_contact_reward: 15.0          # 足先接地時の速度ボーナス係数（5.0→15.0: 3倍増）
+  proper_gait_reward: 8.0            # 適切な歩容報酬（2-3本足接地）（4.0→8.0: 2倍増）
+  body_clearance_reward: 30.0        # 胴体が地面から離れている報酬（15.0→30.0: 2倍増）
   target_height: 0.12                # 目標胴体高さ（12cm）
-  height_reward_weight: 3.0          # 高さ維持報酬の重み
+  height_reward_weight: 10.0         # 高さ維持報酬の重み（5.0→10.0: 2倍増）
+  
+  # 不適切な接地への強力なペナルティ（膝・肩這い防止）
+  knee_contact_penalty: -200.0       # 膝が地面に接触した場合の大きなペナルティ（-30.0→-200.0: 6.7倍増）
+  shoulder_contact_penalty: -500.0   # 【新規追加】肩が地面に接触した場合の非常に大きなペナルティ
+  
+  # 接地判定閾値
+  contact_threshold: 0.03            # 接地判定の閾値（3cm）
   
   # 削除された報酬要素（VecNormalizeと競合するため）
   # height_stability_weight: 12.0

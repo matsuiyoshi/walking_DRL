@@ -322,24 +322,32 @@ class BittleEnvironment(gym.Env):
         # 足先リンクの特定
         self._identify_foot_links()
         
-        self.logger.info("報酬関数設定完了", {"reward_weights": self.reward_weights})
+        self.logger.info("報酬関数設定完了", {
+            "reward_weights": self.reward_weights,
+            "velocity_proportional_foot_reward": True
+        })
     
     def _identify_foot_links(self):
         """
-        足先リンク（エンドエフェクタ）を特定
+        足先リンク（エンドエフェクタ）とshoulder-linkを特定
         
         Bittleの構造:
         - 各脚に2つの関節（shoulder, knee）
         - kneeリンクが足先（エンドエフェクタ）
+        - shoulderリンクも衝突形状を持つため、接地を防ぐ必要がある
         """
         self.foot_links = []
+        self.shoulder_links = []  # 新規追加: shoulder-linkを別カテゴリとして管理
         self.body_links = []  # 胴体と中間関節
         
         # 足先リンク名のパターン（kneeが足先）
         foot_link_patterns = ['knee']
         
-        # 胴体リンク名のパターン
-        body_link_patterns = ['base', 'battery', 'cover', 'mainboard', 'imu', 'shoulder']
+        # shoulderリンク名のパターン（新規追加）
+        shoulder_link_patterns = ['shoulder']
+        
+        # 胴体リンク名のパターン（shoulderを除外）
+        body_link_patterns = ['base', 'battery', 'cover', 'mainboard', 'imu']
         
         for i in range(p.getNumJoints(self.robot_id)):
             joint_info = p.getJointInfo(self.robot_id, i)
@@ -350,6 +358,11 @@ class BittleEnvironment(gym.Env):
                 self.foot_links.append(i)
                 self.logger.debug(f"足先リンク検出: {link_name} (link_index: {i})")
             
+            # shoulderリンクの判定（新規追加）
+            elif any(pattern in link_name for pattern in shoulder_link_patterns):
+                self.shoulder_links.append(i)
+                self.logger.debug(f"Shoulderリンク検出: {link_name} (link_index: {i})")
+            
             # 胴体・中間関節リンクの判定
             elif any(pattern in link_name for pattern in body_link_patterns):
                 self.body_links.append(i)
@@ -358,8 +371,9 @@ class BittleEnvironment(gym.Env):
         # base_link（リンクインデックス-1）も胴体として追加
         self.body_links.append(-1)
         
-        self.logger.info(f"リンク検出完了: 足先={len(self.foot_links)}個, 胴体={len(self.body_links)}個", {
+        self.logger.info(f"リンク検出完了: 足先={len(self.foot_links)}個, shoulder={len(self.shoulder_links)}個, 胴体={len(self.body_links)}個", {
             "foot_links": self.foot_links,
+            "shoulder_links": self.shoulder_links,
             "body_links_count": len(self.body_links)
         })
         
@@ -367,18 +381,22 @@ class BittleEnvironment(gym.Env):
         if len(self.foot_links) != 4:
             self.logger.warning(f"期待される足先リンク数は4個ですが、{len(self.foot_links)}個検出されました")
         
+        # 検証: 4つのshoulderが検出されているか
+        if len(self.shoulder_links) != 4:
+            self.logger.warning(f"期待されるshoulderリンク数は4個ですが、{len(self.shoulder_links)}個検出されました")
+        
         # 運動学的パラメータの初期化
         self._initialize_kinematic_parameters()
     
     def _initialize_kinematic_parameters(self):
         """
         運動学的計算のためのパラメータを初期化
-        Bittleの脚の構造パラメータをURDFから取得
+        Bittleの脚の構造パラメータ（実測値）
         """
-        # URDFから取得したリンク長さ（メートル単位）
+        # リンク長さ（メートル単位、Petoi公式/実測値）
         self.shoulder_length = 0.0  # 肩関節の長さ（肩の回転軸）
-        self.upper_leg_length = 0.49172  # 肩から膝までの距離
-        self.lower_leg_length = 0.0  # 膝から足先までの距離（kneeが最外端）
+        self.upper_leg_length = 0.06  # 肩から膝までの距離（6cm）
+        self.lower_leg_length = 0.06  # 膝から足先までの距離（6cm）
         
         # 各脚の肩関節のベース座標系での位置（URDFから取得）
         # [x, y, z] の順序
@@ -412,6 +430,7 @@ class BittleEnvironment(gym.Env):
         
         self.logger.info("運動学的パラメータ初期化完了", {
             "upper_leg_length": self.upper_leg_length,
+            "lower_leg_length": self.lower_leg_length,
             "leg_base_positions": self.leg_base_positions
         })
     
@@ -517,20 +536,43 @@ class BittleEnvironment(gym.Env):
             raise RobotStateError(self.robot_id) from e
     
     def _generate_random_joint_angles(self) -> List[float]:
-        """ランダムな初期関節角度の生成（±10度）"""
-        # ±10度をラジアンに変換
-        max_deviation = np.radians(10.0)  # 10度 = 0.1745ラジアン
+        """
+        足先で立つ初期姿勢を生成（±10度のランダム性付き）
         
-        # 8つの関節角度を±10度の範囲でランダム生成
+        Bittleの足先で立つための適切な初期姿勢：
+        - Shoulder関節: 約45度前方（+0.785 rad）
+        - Knee関節: 約-70度（-1.2 rad）→足先が下向き
+        
+        Returns:
+            List[float]: 8つの関節角度（shoulder, knee交互に4脚分）
+        """
+        # 足先で立つための基本姿勢
+        base_shoulder_angle = 0.785  # 45度（前方）
+        base_knee_angle = -1.2       # -70度（下向き、膝を曲げる）
+        
+        # ±10度のランダム性を追加（探索のため）
+        max_deviation = np.radians(10.0)  # 10度
+        
         random_angles = []
-        for _ in range(len(self.joint_indices)):
-            # 一様分布で±10度の範囲からランダム選択
-            angle = np.random.uniform(-max_deviation, max_deviation)
-            random_angles.append(float(angle))  # 明示的にfloatに変換
+        for i in range(len(self.joint_indices)):
+            # 偶数インデックス: shoulder関節（0, 2, 4, 6）
+            # 奇数インデックス: knee関節（1, 3, 5, 7）
+            if i % 2 == 0:
+                # Shoulder関節
+                base_angle = base_shoulder_angle
+            else:
+                # Knee関節
+                base_angle = base_knee_angle
+            
+            # ランダム性を追加
+            angle = base_angle + np.random.uniform(-max_deviation, max_deviation)
+            random_angles.append(float(angle))
         
-        self.logger.debug("ランダム関節角度生成", {
-            "angles_degrees": [np.degrees(angle) for angle in random_angles],
-            "angles_radians": random_angles
+        self.logger.debug("足先立ち初期姿勢生成", {
+            "base_shoulder_deg": float(np.degrees(base_shoulder_angle)),
+            "base_knee_deg": float(np.degrees(base_knee_angle)),
+            "angles_degrees": [float(np.degrees(angle)) for angle in random_angles],
+            "angles_radians": [float(angle) for angle in random_angles]
         })
         
         return random_angles
@@ -750,15 +792,29 @@ class BittleEnvironment(gym.Env):
     
     def _calculate_foot_contact_reward(self) -> Tuple[float, Dict]:
         """
-        足先接地報酬の計算
+        足先接地報酬の計算（速度比例型） + shoulder/knee接地ペナルティ
         
         Returns:
             Tuple[float, Dict]: (合計報酬, 報酬詳細)
         """
         foot_contact_count = 0
         body_contact = False
+        knee_contact = False
+        shoulder_contact = False  # 新規追加: shoulder接地フラグ
         foot_contact_details = {}
         reward_breakdown = {}
+        
+        # 前進速度を取得（速度比例報酬のため）
+        velocity, _ = p.getBaseVelocity(self.robot_id)
+        forward_velocity = max(velocity[0], 0.0)  # 前進のみカウント（後退は報酬なし）
+        
+        # 膝リンクのインデックスを特定
+        knee_links = []
+        for i in range(p.getNumJoints(self.robot_id)):
+            joint_info = p.getJointInfo(self.robot_id, i)
+            link_name = joint_info[12].decode('utf-8').lower()
+            if 'knee' in link_name:
+                knee_links.append(i)
         
         # 全ての接触点を取得
         contact_points = p.getContactPoints(self.robot_id)
@@ -771,14 +827,25 @@ class BittleEnvironment(gym.Env):
                 foot_contact_count += 1
                 foot_contact_details[f'foot_{link_index}'] = True
             
+            # shoulderリンクとの接触（新規追加：非常に大きなペナルティ）
+            elif link_index in self.shoulder_links:
+                shoulder_contact = True
+                self.logger.debug(f"Shoulder接触検出（物理エンジン）: link_index={link_index}")
+            
+            # 膝リンクとの接触（ペナルティ対象）
+            elif link_index in knee_links:
+                knee_contact = True
+                self.logger.debug(f"膝接触検出（物理エンジン）: link_index={link_index}")
+            
             # 胴体や中間関節との接触（ペナルティ対象）
             elif link_index in self.body_links:
                 body_contact = True
         
-        # 1. 足先接地報酬（2-4本の足が接地していると高報酬）
+        # 1. 足先接地報酬（速度比例型：足先接地しながら速く動くことを促進）
         if self.reward_weights['foot_contact_reward'] != 0:
             if 1 <= foot_contact_count <= 4:
-                foot_reward = self.reward_weights['foot_contact_reward'] * (foot_contact_count / 4.0)
+                # 速度比例型: 接地率 × 前進速度 × 係数
+                foot_reward = self.reward_weights['foot_contact_reward'] * (foot_contact_count / 4.0) * forward_velocity
             else:
                 foot_reward = 0.0
             reward_breakdown['foot_contact'] = foot_reward
@@ -814,11 +881,25 @@ class BittleEnvironment(gym.Env):
                 height_reward = -self.reward_weights['height_reward_weight'] * min(height_error, 0.1)
             reward_breakdown['height_maintenance'] = height_reward
         
+        # 5. 膝接地ペナルティ（膝で這うことを防ぐ）
+        if knee_contact:
+            knee_penalty = self.reward_config.get('knee_contact_penalty', -200.0)
+            reward_breakdown['knee_contact_penalty'] = knee_penalty
+            self.logger.debug("膝接地ペナルティ適用（物理エンジン）", {"penalty": knee_penalty})
+        
+        # 6. Shoulder接地ペナルティ（新規追加：非常に大きなペナルティ）
+        if shoulder_contact:
+            shoulder_penalty = self.reward_config.get('shoulder_contact_penalty', -500.0)
+            reward_breakdown['shoulder_contact_penalty'] = shoulder_penalty
+            self.logger.warning("Shoulder接地ペナルティ適用（物理エンジン）", {"penalty": shoulder_penalty})
+        
         # デバッグ情報を保存
         if hasattr(self, 'debug_info'):
             self.debug_info['last_foot_contact'] = {
                 'foot_contact_count': foot_contact_count,
                 'body_contact': body_contact,
+                'knee_contact': knee_contact,
+                'shoulder_contact': shoulder_contact,  # 新規追加
                 'foot_details': foot_contact_details
             }
         
@@ -828,6 +909,7 @@ class BittleEnvironment(gym.Env):
     def _calculate_foot_positions_from_kinematics(self) -> Dict[str, Tuple[float, float, float]]:
         """
         関節角度から三角関数を使って足先位置を計算（運動学的計算）
+        2リンクマニピュレータの順運動学（X-Z平面）
         
         Returns:
             Dict[str, Tuple[float, float, float]]: 各脚の足先位置（ワールド座標）
@@ -864,23 +946,29 @@ class BittleEnvironment(gym.Env):
             # 肩関節のベース座標系での位置
             leg_base_pos = self.leg_base_positions[leg_name]
             
-            # 足先位置の計算（2Dの場合を簡略化）
-            # 肩関節から膝までの距離を使用
-            # 膝が最外端なので、膝の位置を足先位置とする
+            # === 2リンクマニピュレータの順運動学（X-Z平面） ===
+            L1 = self.upper_leg_length  # shoulder → knee（6cm）
+            L2 = self.lower_leg_length  # knee → foot tip（6cm）
             
-            # Y-Z平面での計算（脚の伸縮方向）
-            # 肩関節の回転により、脚がY-Z平面で動く
-            knee_y_offset = self.upper_leg_length * np.cos(shoulder_angle_adj)
-            knee_z_offset = self.upper_leg_length * np.sin(shoulder_angle_adj)
+            # 第1リンク（shoulder → knee）の末端位置
+            # X-Z平面での回転（Y軸まわり）
+            knee_x_local = L1 * np.sin(shoulder_angle_adj)
+            knee_z_local = -L1 * np.cos(shoulder_angle_adj)  # 下向きが負（重力方向）
             
-            # 膝関節の回転による追加のオフセット
-            # 膝関節が曲がることで、足先（膝の先端）の位置が変わる
-            # ここでは簡略化して、膝の位置を足先位置とする
+            # 第2リンク（knee → foot tip）
+            # 膝関節の絶対角度 = shoulder角度 + knee角度
+            foot_angle_abs = shoulder_angle_adj + knee_angle_adj
+            foot_x_from_knee = L2 * np.sin(foot_angle_abs)
+            foot_z_from_knee = -L2 * np.cos(foot_angle_abs)
             
-            # ローカル座標系での足先位置
-            foot_local_x = leg_base_pos[0]
-            foot_local_y = leg_base_pos[1] + knee_y_offset
-            foot_local_z = leg_base_pos[2] + knee_z_offset
+            # 足先のローカル座標（肩関節基準、X-Z平面）
+            foot_x_local = knee_x_local + foot_x_from_knee
+            foot_z_local = knee_z_local + foot_z_from_knee
+            
+            # ベース座標系での足先位置
+            foot_local_x = leg_base_pos[0] + foot_x_local
+            foot_local_y = leg_base_pos[1]
+            foot_local_z = leg_base_pos[2] + foot_z_local
             
             # ローカル座標からワールド座標への変換
             foot_world_pos = self._transform_local_to_world(
@@ -890,6 +978,16 @@ class BittleEnvironment(gym.Env):
             )
             
             foot_positions[leg_name] = foot_world_pos
+            
+            # デバッグログ（詳細な計算過程を100ステップごとに出力）
+            if self.episode_steps % 100 == 0 and leg_idx == 0:  # 左前脚のみ
+                self.logger.debug(f"{leg_name} 足先位置計算（X-Z平面）", {
+                    "shoulder_angle_deg": float(np.degrees(shoulder_angle)),
+                    "knee_angle_deg": float(np.degrees(knee_angle)),
+                    "knee_local": (float(knee_x_local), float(knee_z_local)),
+                    "foot_local": (float(foot_x_local), float(foot_z_local)),
+                    "foot_world_z": float(foot_world_pos[2])
+                })
         
         return foot_positions
     
@@ -941,7 +1039,7 @@ class BittleEnvironment(gym.Env):
     
     def _calculate_foot_contact_reward_kinematic(self) -> Tuple[float, Dict]:
         """
-        運動学的計算による足先接地報酬の計算
+        運動学的計算による足先接地報酬の計算（速度比例型） + shoulder高さチェック
         
         Returns:
             Tuple[float, Dict]: (合計報酬, 報酬詳細)
@@ -951,8 +1049,12 @@ class BittleEnvironment(gym.Env):
         # 足先と地面との距離を運動学的に計算
         ground_distances = self._calculate_foot_ground_distances()
         
-        # 接地判定の閾値（5cm以内なら接地とみなす）
-        contact_threshold = 0.05
+        # 接地判定の閾値（3cm以内なら接地とみなす）
+        contact_threshold = self.reward_config.get('contact_threshold', 0.03)
+        
+        # 前進速度を取得（速度比例報酬のため）
+        velocity, _ = p.getBaseVelocity(self.robot_id)
+        forward_velocity = max(velocity[0], 0.0)  # 前進のみカウント（後退は報酬なし）
         
         # 接地している足をカウント
         foot_contact_count = 0
@@ -965,10 +1067,11 @@ class BittleEnvironment(gym.Env):
             else:
                 foot_contact_details[leg_name] = False
         
-        # 1. 足先接地報酬（1-4本の足が接地していると報酬）
+        # 1. 足先接地報酬（速度比例型：足先接地しながら速く動くことを促進）
         if self.reward_weights.get('foot_contact_reward', 0.0) != 0:
             if 1 <= foot_contact_count <= 4:
-                foot_reward = self.reward_weights['foot_contact_reward'] * (foot_contact_count / 4.0)
+                # 速度比例型: 接地率 × 前進速度 × 係数
+                foot_reward = self.reward_weights['foot_contact_reward'] * (foot_contact_count / 4.0) * forward_velocity
             else:
                 foot_reward = 0.0
             reward_breakdown['foot_contact'] = foot_reward
@@ -981,18 +1084,33 @@ class BittleEnvironment(gym.Env):
                 gait_reward = 0.0
             reward_breakdown['proper_gait'] = gait_reward
         
-        # 3. 足先高さ報酬（接地していない足が適切な高さを維持）
+        # 3. 胴体高さ維持報酬（高さが低すぎる場合は大きなペナルティ）
         if self.reward_weights.get('height_reward_weight', 0.0) != 0:
-            target_foot_height = 0.08  # 8cm（歩行時の足の持ち上げ高さ）
-            height_reward_sum = 0.0
+            position, _ = p.getBasePositionAndOrientation(self.robot_id)
+            current_height = position[2]
+            target_height = self.reward_config.get('target_height', 0.12)
             
-            for leg_name, distance in ground_distances.items():
-                if distance > contact_threshold:  # 接地していない足
-                    height_error = abs(distance - target_foot_height)
-                    if height_error < 0.03:  # 3cm以内
-                        height_reward_sum += self.reward_weights['height_reward_weight'] * (1.0 - height_error / 0.03)
-            
-            reward_breakdown['height_maintenance'] = height_reward_sum
+            height_error = abs(current_height - target_height)
+            if height_error < 0.03:  # 3cm以内
+                height_reward = self.reward_weights['height_reward_weight'] * (1.0 - height_error / 0.03)
+            else:
+                # 低すぎる場合は非常に大きなペナルティ（這う動作を防ぐ）
+                if current_height < 0.08:  # 8cm未満なら這っている
+                    height_reward = -self.reward_weights['height_reward_weight'] * 10.0
+                    self.logger.debug("胴体が低すぎる（這い動作）", {
+                        "current_height": float(current_height),
+                        "penalty": float(height_reward)
+                    })
+                else:
+                    height_reward = -self.reward_weights['height_reward_weight'] * min(height_error, 0.1)
+            reward_breakdown['height_maintenance'] = height_reward
+        
+        # 4. Shoulder高さチェック（新規追加：運動学的にshoulder位置を計算）
+        shoulder_too_low = self._check_shoulder_height_kinematic()
+        if shoulder_too_low:
+            shoulder_penalty = self.reward_config.get('shoulder_contact_penalty', -500.0)
+            reward_breakdown['shoulder_height_penalty'] = shoulder_penalty
+            self.logger.warning("Shoulder高さペナルティ適用（運動学的）", {"penalty": shoulder_penalty})
         
         # デバッグ情報の保存
         if hasattr(self, 'debug_info'):
@@ -1000,11 +1118,67 @@ class BittleEnvironment(gym.Env):
                 'ground_distances': ground_distances,
                 'foot_contact_count': foot_contact_count,
                 'foot_details': foot_contact_details,
-                'contact_threshold': contact_threshold
+                'contact_threshold': contact_threshold,
+                'shoulder_too_low': shoulder_too_low  # 新規追加
             }
         
         total_reward = sum(reward_breakdown.values())
         return total_reward, reward_breakdown
+    
+    def _check_shoulder_height_kinematic(self) -> bool:
+        """
+        運動学的にshoulder高さをチェック（地面に近すぎる場合はTrue）
+        
+        Returns:
+            bool: shoulderが地面に近すぎる場合はTrue（2本以上のshoulderが閾値未満）
+        """
+        # ロボットのベース位置と姿勢を取得
+        base_position, base_orientation = p.getBasePositionAndOrientation(self.robot_id)
+        
+        # 関節角度を取得
+        joint_angles = []
+        for joint_idx in self.joint_indices:
+            joint_state = p.getJointState(self.robot_id, joint_idx)
+            joint_angles.append(joint_state[0])
+        
+        shoulder_too_low_count = 0
+        shoulder_height_threshold = 0.04  # 4cm未満ならshoulder接地とみなす
+        
+        legs = ['left_front', 'right_front', 'left_back', 'right_back']
+        
+        for leg_idx, leg_name in enumerate(legs):
+            shoulder_joint_idx = leg_idx * 2
+            shoulder_angle = joint_angles[shoulder_joint_idx]
+            
+            # 左右対称の考慮（モーターの回転方向）
+            symmetry_sign = self.leg_symmetry_sign[leg_name]
+            shoulder_angle_adj = shoulder_angle * symmetry_sign
+            
+            # shoulderのローカル位置（肩関節の基準位置）
+            leg_base_pos = self.leg_base_positions[leg_name]
+            
+            # shoulderリンクの高さを計算（簡略化：ベース高さ + オフセット）
+            # shoulder関節の回転を考慮（簡略化のため、Z軸方向の変位のみ）
+            shoulder_z_offset = 0.0  # shoulder関節は回転のみのため、大きな変位はない
+            shoulder_z_local = leg_base_pos[2] + shoulder_z_offset
+            
+            # ワールド座標でのshoulder高さ
+            shoulder_world_z = base_position[2] + shoulder_z_local
+            
+            # デバッグ（100ステップごと）
+            if self.episode_steps % 100 == 0 and leg_idx == 0:
+                self.logger.debug(f"{leg_name} shoulder高さチェック", {
+                    "shoulder_world_z": float(shoulder_world_z),
+                    "threshold": shoulder_height_threshold,
+                    "base_height": float(base_position[2])
+                })
+            
+            # 地面からの距離をチェック
+            if shoulder_world_z < shoulder_height_threshold:
+                shoulder_too_low_count += 1
+        
+        # 2本以上のshoulderが地面に近い場合はペナルティ
+        return shoulder_too_low_count >= 2
     
     def _calculate_reward_detailed(self, action: np.ndarray) -> Tuple[float, Dict]:
         """VecNormalize対応の報酬計算（正規化なし）"""
