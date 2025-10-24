@@ -99,7 +99,7 @@ class BittleEvaluator:
             self.logger.error("モデル・環境読み込みエラー", exception=e)
             raise
     
-    def evaluate_model(self, num_episodes: int = 10, deterministic: bool = True, 
+    def evaluate_model(self, num_episodes: int = 3, deterministic: bool = True, 
                       render: bool = False, save_video: bool = True) -> Dict:
         """
         モデルの評価実行
@@ -569,7 +569,7 @@ class BittleEvaluator:
 
 
 def evaluate_model(model_path: str, config_path: str = "configs/production.yaml", 
-                  num_episodes: int = 10, render: bool = False, save_video: bool = True) -> Dict:
+                  num_episodes: int = 3, render: bool = False, save_video: bool = True) -> Dict:
     """
     モデル評価の便利関数
     
@@ -592,7 +592,7 @@ if __name__ == "__main__":
     parser.add_argument('model_path', type=str, help='学習済みモデルのパス')
     parser.add_argument('--config', type=str, default='configs/production.yaml',
                         help='設定ファイルのパス')
-    parser.add_argument('--episodes', type=int, default=10,
+    parser.add_argument('--episodes', type=int, default=3,
                         help='評価エピソード数')
     parser.add_argument('--render', action='store_true',
                         help='可視化して実行')
